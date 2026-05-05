@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keibot Factory</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   KEIBOT FACTORY — DESIGN SYSTEM
+═══════════════════════════════════════════ */
+:root {
+  --bg:        #05080d;
+  --surface:   #090d14;
+  --card:      #0d1520;
+  --card2:     #111c2a;
+  --border:    #162030;
+  --border2:   #1e2e42;
+  --accent:    #00d4ff;
+  --accent-dim:rgba(0,212,255,.08);
+  --accent2:   #ff4d6d;
+  --accent3:   #7c5cfc;
+  --green:     #00e887;
+  --yellow:    #ffc94d;
+  --orange:    #ff8c42;
+  --text:      #c8daea;
+  --text2:     #7a9ab8;
+  --muted:     #3a5470;
+  --font-d:    'Clash Display', sans-serif;
+  --font-m:    'DM Mono', monospace;
+  --r:         10px;
+  --r2:        14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+body {
+  font-family: var(--font-d);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── ambient glow ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(0,212,255,.04) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 50% at 90% 80%, rgba(124,92,252,.04) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ════════ SIDEBAR ════════ */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  overflow-y: auto;
+}
+
+.logo {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.logo-sq {
+  width: 32px; height: 32px;
+  background: transparent;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.logo-sq img { width: 100%; height: 100%; object-fit: cover; }
+.logo-name { font-size: 15px; font-weight: 700; letter-spacing: .05em; color: var(--text); }
+.logo-ver { font-family: var(--font-m); font-size: 9px; color: var(--accent); letter-spacing: .15em; margin-top: 2px; }
+
+.nav { padding: 12px 10px; flex: 1; }
+.nav-section {
+  font-family: var(--font-m);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .15em;
+  padding: 10px 8px 5px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  font-family: var(--font-d);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+  margin-bottom: 2px;
+  position: relative;
+}
+.nav-item:hover { background: var(--accent-dim); color: var(--text); border-color: var(--border); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(0,212,255,.2); }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -10px; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 50%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.nav-icon { font-size: 14px; }
+.nav-badge {
+  margin-left: auto;
+  font-family: var(--font-m);
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(255,77,109,.15);
+  color: var(--accent2);
+  border: 1px solid rgba(255,77,109,.2);
+}
+.nav-badge.b-green { background: rgba(0,232,135,.12); color: var(--green); border-color: rgba(0,232,135,.2); }
+.nav-badge.b-blue { background: var(--accent-dim); color: var(--accent); border-color: rgba(0,212,255,.2); }
+
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--border);
+}
+.ch-mini {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ch-mini-av {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent3));
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.ch-mini-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.ch-mini-name { font-size: 10px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-status { display: flex; align-items: center; gap: 4px; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.ch-status-txt { font-family: var(--font-m); font-size: 9px; color: var(--green); }
+
+/* ════════ MAIN ════════ */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; z-index: 1; }
+
+/* topbar */
+.topbar {
+  padding: 12px 26px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(9,13,20,.9);
+  backdrop-filter: blur(10px);
+}
+.tb-title { font-size: 16px; font-weight: 700; }
+.tb-sub { font-family: var(--font-m); font-size: 10px; color: var(--muted); margin-top: 1px; }
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.sys-monitor {
+  display: flex;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: var(--font-m);
+}
+.sm-item { display: flex; flex-direction: column; }
+.sm-lbl { font-size: 8px; color: var(--muted); letter-spacing: .1em; margin-bottom: 1px; }
+.sm-val { font-size: 12px; font-weight: 700; }
+
+/* content */
+.content { flex: 1; overflow-y: auto; padding: 22px 26px; }
+
+/* ════════ PANELS ════════ */
+.panel { display: none; }
+.panel.active { display: block; animation: up .22s ease-out; }
+@keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ════════ COMPONENTS ════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-radius: 8px; font-family: var(--font-d); font-size: 12px; font-weight: 700;
+  cursor: pointer; border: none; transition: all .15s; letter-spacing: .02em;
+}
+.btn-p { background: linear-gradient(135deg, var(--accent), #0099bb); color: #000; }
+.btn-p:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-g { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+.btn-g:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: rgba(255,77,109,.1); color: var(--accent2); border: 1px solid rgba(255,77,109,.25); cursor:pointer; padding:7px 14px; border-radius:8px; font-family:var(--font-d); font-size:12px; font-weight:700; transition:.15s; }
+.btn-danger:hover { background: var(--accent2); color: #fff; }
+.btn-purple { background: rgba(124,92,252,.12); color: var(--accent3); border: 1px solid rgba(124,92,252,.25); }
+.btn-purple:hover { background: var(--accent3); color: #fff; }
+.btn-full { width: 100%; justify-content: center; padding: 13px; font-size: 13px; }
+.btn-sm { padding: 6px 12px; font-size: 11px; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); overflow: hidden; margin-bottom: 14px; }
+.card-head { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 11px; font-weight: 700; letter-spacing: .07em; color: var(--text); }
+.card-sub { font-family: var(--font-m); font-size: 9px; color: var(--muted); margin-top: 2px; }
+.card-body { padding: 18px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--r2); padding: 16px; position: relative; overflow: hidden; }
+.stat::after { content:''; position:absolute; top:0;left:0;right:0; height:2px; }
+.stat.s1::after { background: linear-gradient(90deg,var(--accent),transparent); }
+.stat.s2::after { background: linear-gradient(90deg,var(--accent2),transparent); }
+.stat.s3::after { background: linear-gradient(90deg,var(--accent3),transparent); }
+.stat.s4::after { background: linear-gradient(90deg,var(--green),transparent); }
+.stat-lbl { font-family:var(--font-m); font-size:9px; color:var(--muted); letter-spacing:.12em; margin-bottom:8px; }
+.stat-val { font-size:26px; font-weight:700; line-height:1; margin-bottom:3px; }
+.stat-note { font-family:var(--font-m); font-size:10px; color:var(--muted); }
+.stat-ico { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:24px; opacity:.08; }
+
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.g21 { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+
+.pill { font-family:var(--font-m); font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; display:inline-block; white-space:nowrap; }
+.p-cyan { background:rgba(0,212,255,.1); color:var(--accent); border:1px solid rgba(0,212,255,.2); }
+.p-green { background:rgba(0,232,135,.1); color:var(--green); border:1px solid rgba(0,232,135,.2); }
+.p-red { background:rgba(255,77,109,.1); color:var(--accent2); border:1px solid rgba(255,77,109,.2); }
+.p-yellow { background:rgba(255,201,77,.1); color:var(--yellow); border:1px solid rgba(255,201,77,.2); }
+.p-purple { background:rgba(124,92,252,.1); color:var(--accent3); border:1px solid rgba(124,92,252,.2); }
+.p-muted { background:rgba(58,84,112,.12); color:var(--muted); border:1px solid var(--border); }
+
+.tbl { width:100%; border-collapse:collapse; font-size:12px; }
+.tbl th { font-family:var(--font-m); font-size:9px; color:var(--muted); letter-spacing:.12em; text-align:left; padding:0 0 10px; border-bottom:1px solid var(--border); }
+.tbl td { padding:10px 0; border-bottom:1px solid var(--border); vertical-align:middle; }
+.tbl tr:last-child td { border-bottom:none; }
+
+.fg { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.fg:last-child { margin-bottom:0; }
+.fl { font-size:11px; font-weight:700; color:var(--text); }
+.fl small { font-family:var(--font-m); font-size:9px; color:var(--muted); font-weight:400; margin-left:6px; }
+
+.content input[type=text],
+.content input[type=number],
+.content input[type=datetime-local],
+.content input[type=password],
+.content select,
+.content textarea {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  font-family: var(--font-m); font-size: 12px; padding: 9px 12px; border-radius: 8px;
+  outline: none; width: 100%; transition: border-color .15s, box-shadow .15s;
+}
+.content input:focus,
+.content select:focus,
+.content textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,.07); }
+
+#api-form input[type=file] {
+  padding:8px 10px; background:var(--card2); border:1px dashed var(--border2);
+  cursor:pointer; font-family:var(--font-d); font-size:11px; color:var(--text2);
+  border-radius:8px; width:auto; flex:1; min-width:200px;
+}
+
+input[type=file] { padding:8px 10px; background:var(--card2); border:1px dashed var(--border2); cursor:pointer; font-family:var(--font-d); font-size:11px; color:var(--text2); border-radius:8px; width:100%; }
+input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:4px; background:var(--border); border-radius:2px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); cursor:pointer; transition:.15s; }
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.3); }
+input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--border); border-radius:7px; cursor:pointer; background:transparent; }
+
+.form-section { background: var(--card2); border: 1px solid var(--border); border-radius: var(--r); padding: 18px; margin-bottom: 14px; }
+.fs-title { font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:7px; }
+
+.sg { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 12px; }
+.sg-lbl { display:flex; justify-content:space-between; font-size:9px; font-weight:700; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; }
+.vb { color:var(--accent); font-family:var(--font-m); font-size:11px; background:rgba(0,212,255,.08); padding:1px 6px; border-radius:4px; }
+
+.pb-bg { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.pb-fill { height:100%; border-radius:2px; transition:width .4s; }
+
+.sh { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.sh-title { font-size:17px; font-weight:700; }
+.sh-sub { font-family:var(--font-m); font-size:10px; color:var(--muted); margin-top:2px; }
+
+/* ════════ GALLERY ════════ */
+.gallery-tabs { display:flex; gap:4px; margin-bottom:16px; }
+.gtab { padding:7px 16px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; background:transparent; color:var(--muted); border:1px solid var(--border); transition:.15s; font-family:var(--font-d); }
+.gtab.active,.gtab:hover { background:var(--accent-dim); color:var(--accent); border-color:rgba(0,212,255,.2); }
+
+.gallery-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+.gitem {
+  background:var(--card2); border:1px solid var(--border);
+  border-radius:var(--r); overflow:hidden; cursor:pointer;
+  transition:all .18s; position:relative;
+}
+.gitem:hover { border-color:var(--accent); transform:translateY(-2px); }
+.gitem-thumb {
+  width:100%; aspect-ratio:1;
+  display:grid; place-items:center;
+  font-size:28px;
+  background:linear-gradient(135deg, var(--card), var(--border));
+  position:relative;
+}
+.gitem-thumb.vid { aspect-ratio:16/9; }
+.gitem-overlay {
+  position:absolute; inset:0;
+  background:rgba(0,0,0,0); display:grid; place-items:center;
+  opacity:0; transition:.15s; font-size:18px;
+}
+.gitem:hover .gitem-overlay { opacity:1; background:rgba(0,0,0,.45); }
+.gitem-info { padding:8px 10px; }
+.gitem-name { font-size:10px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.gitem-meta { font-family:var(--font-m); font-size:9px; color:var(--muted); }
+.gitem-del {
+  position:absolute; top:5px; right:5px;
+  width:20px; height:20px;
+  background:rgba(255,77,109,.8); border:none;
+  border-radius:4px; color:#fff; font-size:10px;
+  cursor:pointer; display:none; place-items:center;
+  font-weight:700; line-height:1;
+}
+.gitem:hover .gitem-del { display:grid; }
+
+.upload-zone { border:2px dashed var(--border2); border-radius:var(--r); padding:28px; text-align:center; cursor:pointer; transition:.15s; background:var(--card2); }
+.upload-zone:hover { border-color:var(--accent); background:var(--accent-dim); }
+.upload-zone input { display:none; }
+.uz-icon { font-size:32px; margin-bottom:8px; }
+.uz-text { font-size:12px; font-weight:700; margin-bottom:4px; }
+.uz-sub { font-family:var(--font-m); font-size:10px; color:var(--muted); }
+
+.title-list { background:var(--card2); border:1px solid var(--border); border-radius:var(--r); max-height:220px; overflow-y:auto; padding:4px; }
+.title-item { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border-radius:6px; font-size:12px; transition:.12s; }
+.title-item:hover { background:rgba(0,212,255,.05); }
+.title-item-num { font-family:var(--font-m); font-size:9px; color:var(--muted); width:24px; flex-shrink:0; }
+.title-item-text { flex:1; color:var(--text); }
+.title-item-del { font-size:11px; color:var(--muted); cursor:pointer; padding:2px 6px; border-radius:4px; transition:.12s; }
+.title-item-del:hover { background:rgba(255,77,109,.15); color:var(--accent2); }
+
+/* ════════ BATCH CREATOR ════════ */
+.step-indicator { display:flex; align-items:center; gap:0; margin-bottom:24px; }
+.step { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; color:var(--muted); }
+.step.active { color:var(--accent); }
+.step.done { color:var(--green); }
+.step-num { width:24px; height:24px; border-radius:50%; background:var(--border); display:grid; place-items:center; font-family:var(--font-m); font-size:10px; font-weight:700; flex-shrink:0; transition:.2s; }
+.step.active .step-num { background:var(--accent); color:#000; box-shadow:0 0 14px rgba(0,212,255,.3); }
+.step.done .step-num { background:var(--green); color:#000; }
+.step-line { flex:1; height:1px; background:var(--border); margin:0 8px; min-width:20px; }
+.step.done + .step-line { background:var(--green); }
+
+.sched-preview { background:var(--card2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.sched-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); transition:.12s; }
+.sched-item:last-child { border-bottom:none; }
+.sched-item:hover { background:rgba(0,212,255,.03); }
+.sched-num { width:26px; height:26px; background:var(--accent-dim); border:1px solid rgba(0,212,255,.2); border-radius:6px; display:grid; place-items:center; font-family:var(--font-m); font-size:10px; font-weight:700; color:var(--accent); flex-shrink:0; }
+.sched-info { flex:1; min-width:0; }
+.sched-title { font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.sched-meta { font-family:var(--font-m); font-size:9px; color:var(--muted); }
+.sched-date { font-family:var(--font-m); font-size:10px; color:var(--yellow); flex-shrink:0; }
+
+.task-row { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--card2); border:1px solid var(--border); border-radius:var(--r); margin-bottom:8px; transition:.15s; }
+.task-row:hover { border-color:var(--border2); }
+.task-icon { font-size:20px; width:36px; text-align:center; flex-shrink:0; }
+.task-info { flex:1; min-width:0; }
+.task-name { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.task-meta { font-family:var(--font-m); font-size:10px; color:var(--muted); }
+
+.stop-btn { background:rgba(255,77,109,.1); color:var(--accent2); border:1px solid rgba(255,77,109,.25); padding:6px 12px; border-radius:7px; font-family:var(--font-d); font-size:11px; font-weight:700; cursor:pointer; transition:.15s; }
+.stop-btn:hover { background:var(--accent2); color:#fff; }
+.cancel-btn { background:rgba(58,84,112,.12); color:var(--muted); border:1px solid var(--border); padding:6px 12px; border-radius:7px; font-family:var(--font-d); font-size:11px; font-weight:700; cursor:pointer; transition:.15s; }
+.cancel-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+
+.settings-wrap { display:grid; grid-template-columns:180px 1fr; gap:16px; }
+.snav { display:flex; flex-direction:column; gap:3px; }
+.snav-item { padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; border:1px solid transparent; transition:.15s; }
+.snav-item.active { background:var(--accent-dim); color:var(--accent); border-color:rgba(0,212,255,.2); }
+.snav-item:hover:not(.active) { background:var(--card); border-color:var(--border); color:var(--text); }
+
+.ch-connected { display:flex; align-items:center; gap:12px; background:rgba(0,232,135,.04); border:1px solid rgba(0,232,135,.15); border-radius:var(--r); padding:14px; margin-bottom:12px; }
+.ch-con-av { width:42px; height:42px; border-radius:50%; overflow:hidden; flex-shrink:0; background:linear-gradient(135deg,var(--accent2),var(--accent3)); display:grid; place-items:center; font-size:18px; font-weight:800; color:#fff; }
+.ch-con-av img { width:100%; height:100%; object-fit:cover; }
+
+.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); z-index:100; display:none; place-items:center; }
+.modal-bg.open { display:grid; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r2); width:540px; max-height:85vh; overflow-y:auto; animation:mup .2s ease-out; }
+@keyframes mup { from{opacity:0;transform:scale(.95) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-head { padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:15px; font-weight:700; }
+.modal-body { padding:20px 22px; }
+.modal-foot { padding:14px 22px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+.close-btn { width:26px; height:26px; border-radius:6px; background:transparent; border:1px solid var(--border); color:var(--muted); cursor:pointer; display:grid; place-items:center; font-size:13px; transition:.15s; }
+.close-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+
+.gen-title-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:7px; background:var(--card2); border:1px solid var(--border); margin-bottom:6px; transition:.12s; }
+.gen-title-item:hover { border-color:var(--border2); }
+.gen-title-text { font-size:12px; font-weight:600; flex:1; }
+.gen-title-use { font-size:10px; color:var(--accent); cursor:pointer; padding:3px 8px; border-radius:5px; transition:.12px; border:1px solid rgba(0,212,255,.2); }
+.gen-title-use:hover { background:var(--accent); color:#000; }
+
+.toast-wrap { position:fixed; bottom:24px; right:24px; z-index:200; display:flex; flex-direction:column; gap:8px; }
+.toast { background:var(--card2); border:1px solid var(--border2); border-radius:var(--r); padding:12px 16px; font-size:12px; font-weight:600; min-width:240px; max-width:320px; display:flex; align-items:center; gap:10px; animation:tin .25s ease-out; box-shadow:0 8px 24px rgba(0,0,0,.4); }
+@keyframes tin { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast.t-success { border-color:rgba(0,232,135,.3); }
+.toast.t-error { border-color:rgba(255,77,109,.3); }
+
+/* VISUALIZER ENHANCEMENTS */
+.preview-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px; /* Membatasi agar tidak terlalu raksasa di layar monitor besar */
+  margin: 0 auto 16px auto; /* Membuat posisinya persis di tengah */
+  aspect-ratio: 16 / 9; /* 🔥 INI KUNCI UTAMANYA: Mengunci rasio persis seperti video YouTube */
+  height: auto; /* Membiarkan tinggi menyesuaikan otomatis */
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.7);
+}
+.preview-bg-vid, .preview-bg-img {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: none;
+}
+.preview-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+}
+#preset_canvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+}
+</style>
+</head>
+<!-- FIX PENTING: Dihapus onload="init()" agar browser tidak menunggu logo yang error -->
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">
+      <!-- FIX PENTING: Dihapus onerror placeholder yang menyebabkan infinite loading -->
+      <div class="logo-sq"><img src="/static/logo.png" alt="K" style="color:var(--accent); font-weight:bold; font-size:18px;"></div>
+      <div>
+        <div class="logo-name">KEIBOT FACTORY</div>
+        <div class="logo-ver">v2.0 · BATCH ENGINE</div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">OVERVIEW</div>
+    <button class="nav-item active" onclick="go('dashboard',this)" id="nb-dashboard"><span class="nav-icon">⬡</span> Dashboard</button>
+    <button class="nav-item" onclick="go('tasks',this)" id="nb-tasks"><span class="nav-icon">◈</span> Task Monitor<span class="nav-badge" id="task-badge" style="display:none">0</span></button>
+    <div class="nav-section">STUDIO</div>
+    <button class="nav-item" onclick="go('gallery',this)" id="nb-gallery"><span class="nav-icon">▦</span> Asset Gallery</button>
+    <button class="nav-item" onclick="go('titles',this)" id="nb-titles"><span class="nav-icon">✦</span> Title Generator</button>
+    <button class="nav-item" onclick="go('batch',this)" id="nb-batch"><span class="nav-icon">◉</span> Batch Creator</button>
+    <div class="nav-section">SYSTEM</div>
+    <button class="nav-item" onclick="go('settings',this)" id="nb-settings"><span class="nav-icon">◎</span> Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="ch-mini">
+      <div class="ch-mini-av" id="sb-av">–</div>
+      <div style="flex:1;min-width:0">
+        <div class="ch-mini-name" id="sb-name">Belum ada channel</div>
+        <div class="ch-status"><span class="dot"></span><span class="ch-status-txt" id="sb-count">0 channel</span></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-sub" id="tb-sub">Overview sistem & analytics</div>
+    </div>
+    <div class="tb-right">
+      <div class="sys-monitor">
+        <div class="sm-item"><span class="sm-lbl">CPU</span><span class="sm-val" id="sys-cpu" style="color:var(--accent)">–%</span></div>
+        <div style="width:1px;height:22px;background:var(--border)"></div>
+        <div class="sm-item"><span class="sm-lbl">RAM</span><span class="sm-val" id="sys-ram" style="color:var(--green)">–%</span></div>
+        <div class="sm-item"><span style="font-family:var(--font-m);font-size:9px;color:var(--muted)" id="sys-ram-txt">–/–GB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="sh" style="margin-bottom:18px">
+        <div><div class="sh-title">Analytics Dashboard</div><div class="sh-sub">Performa seluruh channel YouTube yang terhubung</div></div>
+        <select id="analytics_filter" onchange="renderAnalytics()" style="width:200px"><option value="ALL">⬡ ALL CHANNELS</option></select>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat s1"><div class="stat-lbl">TOTAL VIEWS</div><div class="stat-val" id="st-views" style="color:var(--accent)">0</div><div class="stat-note">All channels</div><div class="stat-ico">👁</div></div>
+        <div class="stat s2"><div class="stat-lbl">WATCH TIME (JAM)</div><div class="stat-val" id="st-watch" style="color:var(--accent2)">0</div><div class="stat-note">Estimated</div><div class="stat-ico">⏱</div></div>
+        <div class="stat s3"><div class="stat-lbl">SUBSCRIBERS</div><div class="stat-val" id="st-subs" style="color:var(--accent3)">0</div><div class="stat-note">Total</div><div class="stat-ico">👥</div></div>
+        <div class="stat s4"><div class="stat-lbl">ACTIVE TASKS</div><div class="stat-val" id="st-active" style="color:var(--green)">0</div><div class="stat-note">Running</div><div class="stat-ico">⚡</div></div>
+      </div>
+
+      <div id="mon-box" class="card" style="display:none;margin-bottom:14px">
+        <div class="card-head"><span class="card-title">TARGET MONETISASI</span><span id="mon-status" class="pill p-muted">Menghitung...</span></div>
+        <div class="card-body">
+          <div class="g2">
+            <div><div style="display:flex;justify-content:space-between;font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:5px"><span>Subscribers (1.000)</span><span id="mon-s-pct">0%</span></div><div class="pb-bg"><div class="pb-fill" id="prog-subs" style="width:0%;background:var(--accent3)"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:5px"><span>Watch Hours (4.000)</span><span id="mon-w-pct">0%</span></div><div class="pb-bg"><div class="pb-fill" id="prog-watch" style="width:0%;background:var(--accent)"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card"><div class="card-body" style="padding:16px"><canvas id="dashChart" style="max-height:280px;width:100%"></canvas></div></div>
+    </div>
+
+    <!-- TASKS -->
+    <div id="panel-tasks" class="panel">
+      <div class="sh" style="margin-bottom:18px">
+        <div><div class="sh-title">Task Monitor</div><div class="sh-sub">Real-time render & upload queue</div></div>
+        <div style="display:flex;gap:8px"><button class="btn btn-g btn-sm" onclick="clearHistory()">🧹 Clear History</button></div>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+        <div class="stat s3"><div class="stat-lbl">CHANNELS</div><div class="stat-val" id="tm-ch" style="color:var(--accent3)">0</div><div class="stat-note">Connected</div></div>
+        <div class="stat s1"><div class="stat-lbl">ACTIVE</div><div class="stat-val" id="tm-act" style="color:var(--accent)">0</div><div class="stat-note">Running</div></div>
+        <div class="stat s4"><div class="stat-lbl">DONE</div><div class="stat-val" id="tm-done" style="color:var(--green)">0</div><div class="stat-note">History</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">◉ RENDER & UPLOAD QUEUE</span><span class="pill p-cyan" id="q-badge">0 aktif</span></div>
+        <div style="padding:10px 16px 6px"><div id="taskList"><div style="text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Tidak ada task aktif.</div></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">🗂 HISTORY</span></div>
+        <div class="card-body" style="padding:0 16px 8px;overflow-x:auto">
+          <table class="tbl" style="min-width:500px">
+            <thead><tr><th style="width:8%">ID</th><th style="width:50%">JUDUL</th><th>STATUS</th></tr></thead>
+            <tbody id="historyTbl"><tr><td colspan="3" style="text-align:center;padding:16px;color:var(--muted);font-family:var(--font-m);font-size:11px">Belum ada history.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div id="panel-gallery" class="panel">
+      <div class="sh" style="margin-bottom:14px">
+        <div><div class="sh-title">Gallery</div><div class="sh-sub">Kelola audio, background & thumbnail per channel</div></div>
+        <div style="display:flex;gap:8px;align-items:center"><span style="font-family:var(--font-m);font-size:11px;color:var(--muted)">Channel:</span><select id="gallery-ch-sel" onchange="loadGallery()" style="width:180px"><option value="">-- Pilih Channel --</option></select></div>
+      </div>
+
+      <div class="gallery-tabs">
+        <button class="gtab active" onclick="switchGTab('audio',this)">🎵 Audio (<span id="gcount-audio">0</span>)</button>
+        <button class="gtab" onclick="switchGTab('background',this)">🎬 Background (<span id="gcount-bg">0</span>)</button>
+        <button class="gtab" onclick="switchGTab('thumbnails',this)">🖼️ Thumbnails (<span id="gcount-thumb">0</span>)</button>
+      </div>
+
+      <div class="upload-zone" id="gallery-drop-zone" onclick="document.getElementById('gallery-file-input').click()">
+        <input type="file" id="gallery-file-input" multiple onchange="handleGalleryUpload(event)">
+        <div class="uz-icon">⬆</div>
+        <div class="uz-text">Upload File ke Gallery</div>
+        <div class="uz-sub" id="gallery-accept-hint">Accepted: .mp3 .wav</div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="gallery-grid" id="gallery-grid"><div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Pilih channel dulu untuk melihat gallery.</div></div>
+      </div>
+    </div>
+
+    <!-- TITLES -->
+    <div id="panel-titles" class="panel">
+      <div class="sh" style="margin-bottom:18px">
+        <div><div class="sh-title">Title Generator</div><div class="sh-sub">Upload title bank & generate judul baru secara otomatis</div></div>
+        <select id="title-ch-sel" onchange="loadTitleBank()" style="width:180px"><option value="">-- Pilih Channel --</option></select>
+      </div>
+
+      <div class="g21" style="gap:18px">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div><div class="card-title">TITLE BANK</div><div class="card-sub" id="title-bank-count">0 judul tersimpan</div></div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-g btn-sm" onclick="document.getElementById('title-file-input').click()">⬆ Upload .txt</button>
+                <input type="file" id="title-file-input" accept=".txt" style="display:none" onchange="uploadTitleBank(event)">
+                <button class="btn btn-danger btn-sm" onclick="clearTitleBank()">🗑 Clear</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding:12px"><div class="title-list" id="title-list"><div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-m);font-size:11px">Upload file .txt berisi daftar judul (satu judul per baris).</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><span class="card-title">➕ TAMBAH JUDUL MANUAL</span></div>
+            <div class="card-body"><div style="display:flex;gap:8px"><input type="text" id="manual-title-input" placeholder="Ketik judul baru..." style="flex:1"><button class="btn btn-p" onclick="addManualTitle()">Tambah</button></div></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-head"><div><div class="card-title">✦ GENERATOR</div><div class="card-sub">Recombine & generate judul baru dari bank</div></div></div>
+            <div class="card-body">
+              <div class="fg"><label class="fl">Jumlah judul yang di-generate</label><input type="number" id="gen-count" value="10" min="1" max="100"></div>
+              <div class="fg"><label class="fl">Mode Generate</label><select id="gen-mode"><option value="recombine">Recombine (mix bagian judul)</option><option value="shuffle">Shuffle acak dari bank</option><option value="ai_style">AI-style (tambah variasi kata)</option></select></div>
+              <div class="fg"><label class="fl">Separator <small>pemisah antar bagian</small></label><select id="gen-sep"><option value=" - "> — (dash)</option><option value=" | "> | (pipe)</option><option value=" : "> : (colon)</option><option value=" "> (spasi)</option></select></div>
+              <div class="fg">
+                <label class="fl">Suffix otomatis <small>(opsional)</small></label>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="suffix-chips">
+                  <span class="gtab" style="font-size:10px;padding:4px 10px" onclick="this.classList.toggle('active')" data-val="{tag}">🏷 Tag</span>
+                  <span class="gtab" style="font-size:10px;padding:4px 10px" onclick="this.classList.toggle('active')" data-val="{hari}">📅 Hari</span>
+                  <span class="gtab" style="font-size:10px;padding:4px 10px" onclick="this.classList.toggle('active')" data-val="{bulan}">🌙 Bulan</span>
+                  <span class="gtab" style="font-size:10px;padding:4px 10px" onclick="this.classList.toggle('active')" data-val="{tahun}">🎯 Tahun</span>
+                </div>
+              </div>
+              <button class="btn btn-p btn-full" style="margin-top:8px" onclick="generateTitles()">✦ GENERATE SEKARANG</button>
+            </div>
+          </div>
+          <div class="card" id="gen-result-card" style="display:none">
+            <div class="card-head"><div><div class="card-title">HASIL GENERATE</div><div class="card-sub" id="gen-result-count">0 judul baru</div></div><button class="btn btn-g btn-sm" onclick="saveAllGenerated()">💾 Simpan Semua ke Bank</button></div>
+            <div class="card-body" style="padding:10px"><div id="gen-results"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BATCH CREATOR -->
+    <div id="panel-batch" class="panel">
+      <div class="sh" style="margin-bottom:20px">
+        <div><div class="sh-title">Batch Creator</div><div class="sh-sub">Buat banyak video sekaligus dengan satu kali setting</div></div>
+      </div>
+
+      <div class="step-indicator">
+        <div class="step active" id="step-1"><div class="step-num">1</div><span>Channel & Jumlah</span></div><div class="step-line"></div>
+        <div class="step" id="step-2"><div class="step-num">2</div><span>Jadwal</span></div><div class="step-line"></div>
+        <div class="step" id="step-3"><div class="step-num">3</div><span>Visualizer</span></div><div class="step-line"></div>
+        <div class="step" id="step-4"><div class="step-num">4</div><span>Preview & Proses</span></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div id="bs-1" class="batch-step">
+        <div class="g2">
+          <div class="form-section">
+            <div class="fs-title">⬡ Target Channel & Kuantitas</div>
+            <div class="fg"><label class="fl">Channel YouTube</label><select id="bc-channel" onchange="onBcChannelChange()"><option value="">-- Pilih Channel --</option></select></div>
+            <div class="fg"><label class="fl">Pilih Playlist <small>(opsional)</small></label><select id="bc-playlist"><option value="">-- Tidak masuk playlist --</option></select></div>
+            <div class="g2">
+              <div class="fg" style="margin-bottom:0"><label class="fl">Jumlah Video</label><input type="number" id="bc-count" value="5" min="1" max="100" oninput="updateBatchPreview()"></div>
+              <div class="fg" style="margin-bottom:0">
+                <label class="fl" style="color:var(--accent);">Jumlah MP3 Acak per Video</label>
+                <input type="number" id="bc-mp3-count" value="5" min="1" max="100" title="Sistem akan mengambil lagu secara acak dari Gallery untuk digabungkan menjadi Base Video.">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <div class="fs-title">🎲 Konten Sumber</div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
+              <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.1em">AUDIO DI GALLERY</div>
+              <div id="bc-audio-status" style="font-size:12px;font-weight:700;color:var(--text2)">Pilih channel dulu</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
+              <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.1em">BACKGROUND & THUMBNAILS</div>
+              <div id="bc-bg-status" style="font-size:12px;font-weight:700;color:var(--text2)">Pilih channel dulu</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px">
+              <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.1em">TITLE BANK</div>
+              <div id="bc-title-status" style="font-size:12px;font-weight:700;color:var(--text2)">Pilih channel dulu</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="fs-title">📝 Template Metadata YouTube</div>
+          <div class="g2">
+            <div class="fg"><label class="fl">Deskripsi Video</label><textarea id="bc-desc" rows="4" placeholder="Deskripsi yang sama untuk semua video...">🎵 Enjoy this lo-fi beat for studying, relaxing, or working.
+📌 Subscribe for daily uploads!
+
+#lofi #chillbeats #studymusic</textarea></div>
+            <div>
+              <div class="fg"><label class="fl">Tags <small>(koma)</small></label><input type="text" id="bc-tags" value="lofi, chill beats, study music" placeholder="tag1, tag2, ..."></div>
+              <div class="fg"><label class="fl">Privasi</label><select id="bc-privacy"><option value="public">🌍 Public</option><option value="unlisted">🔗 Unlisted</option><option value="private" selected>🔒 Private (schedule)</option></select></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" onclick="goStep(2)">Lanjut: Jadwal →</button></div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="bs-2" class="batch-step" style="display:none">
+        <div class="g2" style="margin-bottom:14px">
+          <div class="form-section">
+            <div class="fs-title">📅 Jadwal Publish</div>
+            <div class="fg"><label class="fl">Tanggal & Jam Video Pertama</label><input type="datetime-local" id="bc-start-date" oninput="updateBatchPreview()"></div>
+            <div class="fg">
+              <label class="fl">Interval Publish</label>
+              <select id="bc-interval" onchange="onIntervalChange()">
+                <option value="1">Setiap hari</option>
+                <option value="2">Setiap 2 hari</option>
+                <option value="3">Setiap 3 hari</option>
+                <option value="7">Setiap seminggu</option>
+                <option value="0.5">2x sehari (12 jam)</option>
+                <option value="custom">Custom (hari)...</option>
+              </select>
+            </div>
+            <div class="fg" id="custom-interval-wrap" style="display:none"><label class="fl">Interval Custom <small>(hari)</small></label><input type="number" id="bc-custom-interval" value="1" min="0.1" step="0.1" oninput="updateBatchPreview()"></div>
+            <div class="fg" style="margin-bottom:18px; padding-bottom:18px; border-bottom:1px dashed var(--border2);">
+              <label class="fl" style="color:var(--green); font-size:13px;">⏱️ Target Durasi Final Video</label>
+              <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:8px">Sistem akan otomatis menghitung <i>looping</i> yang dibutuhkan agar video pas sesuai durasi ini.</div>
+              <select id="bc-target-duration" onchange="onTargetDurationChange()" style="font-size:14px; font-weight:bold; background:rgba(0,232,135,.05); border-color:rgba(0,232,135,.3); color:var(--green);">
+                <option value="1">1 Jam (60 Menit)</option>
+                <option value="3">3 Jam</option>
+                <option value="5">5 Jam</option>
+                <option value="10" selected>10 Jam (Lullaby / Sleep Music)</option>
+                <option value="12">12 Jam</option>
+                <option value="custom">⚙️ Custom (Input Jam Sendiri)...</option>
+              </select>
+              <input type="number" id="bc-custom-duration" value="2" min="0.1" step="0.1" style="display:none; margin-top:8px; border-color:var(--accent);" placeholder="Ketik jumlah jam (Misal: 2.5 untuk 2,5 Jam)" oninput="updateBatchPreview()">
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="fs-title">📋 Preview Jadwal</div>
+            <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:10px" id="sched-summary">–</div>
+            <div class="sched-preview" id="sched-preview-list"><div style="padding:16px;text-align:center;color:var(--muted);font-family:var(--font-m);font-size:11px">Isi data di kiri untuk melihat preview jadwal.</div></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between"><button class="btn btn-g" onclick="goStep(1)">← Kembali</button><button class="btn btn-p" onclick="goStep(3)">Lanjut: Visualizer →</button></div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="bs-3" class="batch-step" style="display:none">
+        <div class="form-section">
+          <div class="fs-title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>🎨 Setting Visualizer & Live Preview</span>
+              <div style="display:flex; gap:8px;">
+                  <button type="button" class="btn btn-g btn-sm" onclick="importVisPreset()">📥 Import JSON</button>
+                  <button type="button" class="btn btn-g btn-sm" onclick="exportVisPreset()">📤 Export JSON</button>
+              </div>
+          </div>
+          
+          <div class="g2" style="margin-bottom:16px">
+            <div class="fg" style="margin-bottom:0">
+              <label class="fl">Mode Visualizer</label>
+              <select id="bc-vis-mode" onchange="onVisModeChange()">
+                <option value="manual">Manual (Terapkan setting ini ke semua video)</option>
+                <option value="random">🎲 Random Acak dari Preset Tersimpan</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="vis-manual-wrap">
+            <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-size:11px; font-weight:700; color:var(--text); letter-spacing:.08em;">LIVE PREVIEW BACKGROUND DARI GALLERY</div>
+            </div>
+            
+            <div class="preview-container" id="preview-container">
+                <video id="preview_bg_vid" class="preview-bg-vid" muted loop autoplay playsinline></video>
+                <img id="preview_bg_img" class="preview-bg-img" alt="Preview Background">
+                <div class="preview-overlay"></div>
+                <canvas id="preset_canvas"></canvas>
+            </div>
+
+            <div class="g3" style="margin-bottom:12px">
+              <div class="sg"><div class="sg-lbl">Base Color</div><input type="color" id="bc-col-bot" value="#10b981"></div>
+              <div class="sg"><div class="sg-lbl">Peak Color</div><input type="color" id="bc-col-top" value="#00e5ff"></div>
+              <div class="sg"><div class="sg-lbl">Particle Color</div><input type="color" id="bc-col-part" value="#ffffff"></div>
+            </div>
+            <div class="g3">
+              <div class="sg"><div class="sg-lbl">X Pos <span class="vb" id="vv-px">50%</span></div><input type="range" id="bc-pos-x" name="pos_x" min="0" max="100" value="50" oninput="uv('vv-px',this.value,'%')"></div>
+              <div class="sg"><div class="sg-lbl">Y Pos <span class="vb" id="vv-py">85%</span></div><input type="range" id="bc-pos-y" name="pos_y" min="0" max="100" value="85" oninput="uv('vv-py',this.value,'%')"></div>
+              <div class="sg"><div class="sg-lbl">Width <span class="vb" id="vv-wp">60%</span></div><input type="range" id="bc-width" name="width_pct" min="10" max="100" value="60" oninput="uv('vv-wp',this.value,'%')"></div>
+              <div class="sg"><div class="sg-lbl">Max Height <span class="vb" id="vv-mh">40%</span></div><input type="range" id="bc-maxh" name="max_height" min="10" max="100" value="40" oninput="uv('vv-mh',this.value,'%')"></div>
+              <div class="sg"><div class="sg-lbl">Idle Height <span class="vb" id="vv-ih">5px</span></div><input type="range" id="bc-idle" name="idle_height" min="0" max="50" value="5" oninput="uv('vv-ih',this.value,'px')"></div>
+              <div class="sg"><div class="sg-lbl">Bar Count <span class="vb" id="vv-bc">64</span></div><input type="range" id="bc-bars" name="bar_count" min="10" max="200" value="64" oninput="uv('vv-bc',this.value,'')"></div>
+              <div class="sg"><div class="sg-lbl">Reactivity <span class="vb" id="vv-r">0.66x</span></div><input type="range" id="bc-react" name="reactivity" min="0.1" max="4.0" step="0.01" value="0.66" oninput="uv('vv-r',this.value,'x')"></div>
+              <div class="sg"><div class="sg-lbl">Gravity <span class="vb" id="vv-g">0.08</span></div><input type="range" id="bc-grav" name="gravity" min="0.01" max="0.50" step="0.01" value="0.08" oninput="uv('vv-g',this.value,'')"></div>
+              <div class="sg"><div class="sg-lbl">Bar Gap <span class="vb" id="vv-sp">3px</span></div><input type="range" id="bc-gap" name="spacing" min="0" max="20" value="3" oninput="uv('vv-sp',this.value,'px')"></div>
+              <div class="sg"><div class="sg-lbl">Particles <span class="vb" id="vv-pa">3</span></div><input type="range" id="bc-parts" name="part_amount" min="0" max="300" value="3" oninput="uv('vv-pa',this.value,'')"></div>
+              <div class="sg"><div class="sg-lbl">Part Speed <span class="vb" id="vv-ps">1.0x</span></div><input type="range" id="bc-pspd" name="part_speed" min="0.1" max="5.0" step="0.1" value="1.0" oninput="uv('vv-ps',this.value,'x')"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px; align-items:center;">
+              <button type="button" class="btn btn-g btn-sm" onclick="saveVisPreset()">💾 Simpan Preset</button>
+              <select id="vis-preset-load" style="width:180px" onchange="loadVisPreset(this.value)"><option value="">-- Load Preset --</option></select>
+              <button type="button" class="btn btn-danger btn-sm" onclick="deleteVisPreset()">🗑 Hapus Preset</button>
+            </div>
+          </div>
+
+          <div id="vis-random-wrap" style="display:none">
+            <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:var(--r);padding:16px;text-align:center">
+              <div style="font-size:28px;margin-bottom:8px">🎲</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:4px">Random Preset Mode</div>
+              <div style="font-family:var(--font-m);font-size:11px;color:var(--muted);margin-bottom:14px">Setiap video akan menggunakan preset yang berbeda secara acak dari daftar yang kamu ceklist.</div>
+              <div id="random-preset-list" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center; max-height:100px; overflow-y:auto; padding:10px;"></div>
+              <div style="margin-top:12px;font-family:var(--font-m);font-size:10px;color:var(--muted)" id="random-preset-note">Belum ada preset. Simpan dulu di mode Manual.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <button class="btn btn-g" onclick="goStep(2)">← Kembali</button>
+          <button class="btn btn-p" onclick="goStep(4)">Lanjut: Preview →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div id="bs-4" class="batch-step" style="display:none">
+        <div class="form-section" style="border-color:rgba(0,232,135,.2);background:rgba(0,232,135,.02)">
+          <div class="fs-title" style="color:var(--green)">✅ Ringkasan Batch Job</div>
+          <div class="g4" style="margin-bottom:16px">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-family:var(--font-m);font-size:9px;color:var(--muted);margin-bottom:4px">TOTAL VIDEO</div>
+              <div style="font-size:24px;font-weight:700;color:var(--accent)" id="sum-count">0</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-family:var(--font-m);font-size:9px;color:var(--muted);margin-bottom:4px">TARGET DURASI</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green)" id="sum-duration">–</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-family:var(--font-m);font-size:9px;color:var(--muted);margin-bottom:4px">MULAI TAYANG</div>
+              <div style="font-size:11px;font-weight:700;color:var(--yellow)" id="sum-start">–</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
+              <div style="font-family:var(--font-m);font-size:9px;color:var(--muted);margin-bottom:4px">SELESAI TAYANG</div>
+              <div style="font-size:11px;font-weight:700;color:var(--yellow)" id="sum-end">–</div>
+            </div>
+          </div>
+
+          <div style="font-family:var(--font-m);font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.1em">JADWAL LENGKAP</div>
+          <div class="sched-preview" id="final-sched-list" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <button class="btn btn-g" onclick="goStep(3)">← Kembali</button>
+          <button class="btn btn-p btn-full" style="max-width:280px;font-size:14px" onclick="processBatch()">
+            🚀 PROSES SEMUA VIDEO
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="panel-settings" class="panel">
+      <div class="sh" style="margin-bottom:20px">
+        <div><div class="sh-title">Settings</div><div class="sh-sub">API Google, channel & konfigurasi sistem</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-head">
+          <span class="card-title">🔑 GOOGLE OAUTH 2.0 API</span>
+          <span id="api-badge" class="pill p-muted">Mengecek...</span>
+        </div>
+        <div class="card-body">
+          <div style="font-family:var(--font-m);font-size:11px;color:var(--muted);margin-bottom:14px">Upload <b style="color:var(--text)">client_secret.json</b> (Tipe: TVs and Limited Input Devices) untuk menghubungkan channel.</div>
+          <form id="api-form" style="display:flex;gap:10px;flex-wrap:wrap">
+            <input type="file" name="secret_file" accept=".json" required style="flex:1;min-width:200px">
+            <button type="button" class="btn btn-p" onclick="uploadSecret()">UPLOAD API KEY</button>
+          </form>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:14px;font-weight:700">◉ Connected Channels</div>
+        <button class="btn btn-p" onclick="generateTVLink()">＋ Tautkan Channel Baru</button>
+      </div>
+      
+      <div id="tv-box" style="display:none;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.2);border-radius:var(--r);padding:16px;margin-bottom:16px">
+        <div style="font-family:var(--font-m);font-size:11px;color:var(--accent);margin-bottom:6px" id="tv-msg">Copy link ini di profil Chrome channel YouTube target:</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="tv-url" readonly style="font-weight:700;flex:1">
+          <button class="btn btn-p" onclick="copyTvUrl()">COPY</button>
+        </div>
+      </div>
+
+      <div id="channels-grid"></div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ────────────────────────────────────────────────────────
+//  STATE
+// ────────────────────────────────────────────────────────
+let channels = [];
+let galleryData = { audio: [], background: [], thumbnails: [] };
+let titleBankData = {};    // { yt_id: [titles...] }
+let visPresets = JSON.parse(localStorage.getItem('wp_presets') || '{}');
+let analyticsData = [];
+let chartInstance = null;
+let serverData = { active: [], history: [] };
+let browserQueue = [];
+let generatedTitles = [];
+let currentGalleryType = 'audio';
+let currentGalleryCh = '';
+let currentTitleCh = '';
+
+// ────────────────────────────────────────────────────────
+//  CANVAS — resize responsif
+// ────────────────────────────────────────────────────────
+let visCanvas = null;
+let vCtx = null;
+let timeTick = 0;
+
+function initCanvas() {
+  visCanvas = document.getElementById('preset_canvas');
+  if (!visCanvas) return;
+  const container = document.getElementById('preview-container');
+  if (container) {
+    visCanvas.width = container.offsetWidth || 640;
+    visCanvas.height = container.offsetHeight || 180;
+  } else {
+    visCanvas.width = 640;
+    visCanvas.height = 180;
+  }
+  vCtx = visCanvas.getContext('2d');
+}
+
+window.addEventListener('resize', () => {
+  if (visCanvas) {
+    const container = document.getElementById('preview-container');
+    if (container) {
+      visCanvas.width = container.offsetWidth;
+      visCanvas.height = container.offsetHeight;
+    }
+  }
+});
+
+// ────────────────────────────────────────────────────────
+//  NAVIGATION
+// ────────────────────────────────────────────────────────
+const PAGE_META = {
+  dashboard: { t: 'Dashboard',       s: 'Overview sistem & analytics' },
+  tasks:     { t: 'Task Monitor',    s: 'Real-time render & upload queue' },
+  gallery:   { t: 'Gallery',         s: 'Kelola audio, background & thumbnail' },
+  titles:    { t: 'Title Generator', s: 'Upload bank & generate judul baru' },
+  batch:     { t: 'Batch Creator',   s: 'Buat banyak video sekaligus' },
+  settings:  { t: 'Settings',        s: 'API Google, channel & konfigurasi' }
+};
+
+function go(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  (el || document.getElementById('nb-' + id)).classList.add('active');
+  document.getElementById('tb-title').textContent = PAGE_META[id].t;
+  document.getElementById('tb-sub').textContent = PAGE_META[id].s;
+  if (id === 'dashboard') fetchAnalytics();
+  if (id === 'batch') {
+    refreshBatchDropdowns();
+    setTimeout(initCanvas, 50);
+  }
+}
+
+// ────────────────────────────────────────────────────────
+//  TOAST
+// ────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const w = document.getElementById('toast-wrap');
+  const icons = { success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️' };
+  const classes = { success: 't-success', error: 't-error', info: '', warn: '' };
+  const el = document.createElement('div');
+  el.className = `toast ${classes[type]}`;
+  el.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+  w.appendChild(el);
+  setTimeout(() => { if (el.parentNode) el.remove(); }, 3500);
+}
+
+// ────────────────────────────────────────────────────────
+//  SYSTEM MONITOR
+// ────────────────────────────────────────────────────────
+function pollSysStats() {
+  fetch('/api/get_dashboard_stats').then(r => r.json()).then(d => {
+    if (d.sys_cpu !== undefined) {
+      document.getElementById('sys-cpu').textContent = d.sys_cpu + '%';
+      document.getElementById('sys-ram').textContent = d.sys_ram_pct + '%';
+      document.getElementById('sys-ram-txt').textContent = d.sys_ram_text;
+    }
+    document.getElementById('st-active').textContent = d.active_tasks || 0;
+  }).catch(() => {});
+}
+
+// ────────────────────────────────────────────────────────
+//  CHANNELS
+// ────────────────────────────────────────────────────────
+function loadChannels() {
+  fetch('/api/get_channels').then(r => r.json()).then(data => {
+    channels = data;
+    ['gallery-ch-sel', 'title-ch-sel', 'bc-channel'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      const val = sel.value;
+      sel.innerHTML = '<option value="">-- Pilih Channel --</option>';
+      data.forEach(c => sel.innerHTML += `<option value="${c.yt_id}">${c.name}</option>`);
+      if (val) sel.value = val;
+    });
+    if (data.length) {
+      document.getElementById('sb-name').textContent = data[0].name;
+      document.getElementById('sb-count').textContent = data.length + ' channel';
+      const av = document.getElementById('sb-av');
+      av.innerHTML = data[0].thumbnail ? `<img src="${data[0].thumbnail}">` : data[0].name[0];
+    }
+    data.forEach(c => { if (c.title_bank) titleBankData[c.yt_id] = c.title_bank; });
+    renderChannelsGrid();
+  }).catch(() => {});
+}
+
+function renderChannelsGrid() {
+  const g = document.getElementById('channels-grid');
+  if (!channels.length) {
+    g.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-family:var(--font-m);font-size:12px;border:1px dashed var(--border);border-radius:var(--r)">Belum ada channel. Klik "Tautkan Channel Baru".</div>`;
+    return;
+  }
+  g.innerHTML = channels.map(c => `
+    <div class="ch-connected">
+      <div class="ch-con-av">${c.thumbnail ? `<img src="${c.thumbnail}">` : c.name[0]}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;margin-bottom:3px">${c.name}</div>
+        <span class="pill p-green">${c.status}</span>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteChannel('${c.yt_id}')">🗑 Hapus</button>
+    </div>`).join('');
+}
+
+function deleteChannel(yt_id) {
+  if (!confirm('Hapus channel ini?')) return;
+  const fd = new FormData();
+  fd.append('yt_id', yt_id);
+  fetch('/api/delete_channel', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => { toast(d.message, 'success'); loadChannels(); })
+    .catch(() => toast('Gagal menghapus channel', 'error'));
+}
+
+// ────────────────────────────────────────────────────────
+//  GALLERY
+// ────────────────────────────────────────────────────────
+function switchGTab(type, el) {
+  document.querySelectorAll('.gallery-tabs .gtab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentGalleryType = type;
+  let hint = 'Accepted: .mp4 .jpg .png';
+  if (type === 'audio') hint = 'Accepted: .mp3 .wav';
+  if (type === 'thumbnails') hint = 'Accepted: .jpg .png';
+  document.getElementById('gallery-accept-hint').textContent = hint;
+  let ac = '.mp4,.jpg,.png,.jpeg';
+  if (type === 'audio') ac = '.mp3,.wav';
+  if (type === 'thumbnails') ac = '.jpg,.png,.jpeg';
+  document.getElementById('gallery-file-input').accept = ac;
+  renderGallery();
+}
+
+function loadGallery() {
+  currentGalleryCh = document.getElementById('gallery-ch-sel').value;
+  if (!currentGalleryCh) {
+    galleryData = { audio: [], background: [], thumbnails: [] };
+    renderGallery();
+    return;
+  }
+  fetch(`/api/get_gallery?yt_id=${currentGalleryCh}`).then(r => r.json()).then(data => {
+    galleryData = data;
+    document.getElementById('gcount-audio').textContent = (data.audio || []).length;
+    document.getElementById('gcount-bg').textContent = (data.background || []).length;
+    document.getElementById('gcount-thumb').textContent = (data.thumbnails || []).length;
+    renderGallery();
+  }).catch(() => {
+    galleryData = { audio: [], background: [], thumbnails: [] };
+    renderGallery();
+  });
+}
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  const items = galleryData[currentGalleryType] || [];
+  if (!currentGalleryCh) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Pilih channel untuk melihat gallery.</div>`;
+    return;
+  }
+  if (!items.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Belum ada file. Upload menggunakan zona di atas.</div>`;
+    return;
+  }
+  const isAudio = currentGalleryType === 'audio';
+  grid.innerHTML = items.map((f) => `
+    <div class="gitem">
+      <div class="gitem-thumb ${isAudio ? '' : 'vid'}">
+        <span>${isAudio ? '🎵' : '🖼️'}</span>
+        <div class="gitem-overlay">▶</div>
+      </div>
+      <button class="gitem-del" onclick="deleteGalleryFile('${f.name}')">✕</button>
+      <div class="gitem-info">
+        <div class="gitem-name">${f.name}</div>
+        <div class="gitem-meta">${f.size || '—'}</div>
+      </div>
+    </div>`).join('');
+}
+
+function handleGalleryUpload(event) {
+  if (!currentGalleryCh) {
+    toast('Pilih channel dulu sebelum upload!', 'warn');
+    event.target.value = '';
+    return;
+  }
+  const files = event.target.files;
+  if (!files || !files.length) return;
+
+  const fd = new FormData();
+  fd.append('yt_id', currentGalleryCh);        // ← pastikan selalu ada
+  fd.append('type', currentGalleryType);       // audio | background | thumbnails
+
+  for (let i = 0; i < files.length; i++) {
+    fd.append('files[]', files[i]);
+  }
+
+  toast(`Mengupload ${files.length} file ke ${currentGalleryType}...`, 'info');
+
+  fetch('/api/upload_gallery', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'success') {
+        toast(d.message, 'success');
+        loadGallery();   // refresh grid setelah upload
+      } else {
+        toast('Upload gagal: ' + (d.message || 'Unknown error'), 'error');
+      }
+    })
+    .catch(err => toast('Koneksi gagal: ' + err.message, 'error'));
+
+  event.target.value = '';   // reset input agar bisa upload file sama lagi
+}
+
+function deleteGalleryFile(name) {
+  if (!confirm(`Hapus file "${name}"?`)) return;
+  const fd = new FormData();
+  fd.append('yt_id', currentGalleryCh);
+  fd.append('type', currentGalleryType);
+  fd.append('name', name);
+  fetch('/api/delete_gallery_file', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => { toast(d.message, d.status === 'success' ? 'success' : 'error'); loadGallery(); })
+    .catch(() => toast('Gagal menghapus file', 'error'));
+}
+
+// ────────────────────────────────────────────────────────
+//  TITLE BANK & GENERATOR
+// ────────────────────────────────────────────────────────
+function loadTitleBank() {
+  currentTitleCh = document.getElementById('title-ch-sel').value;
+  const bank = titleBankData[currentTitleCh] || [];
+  renderTitleList(bank);
+}
+
+function renderTitleList(bank) {
+  const list = document.getElementById('title-list');
+  document.getElementById('title-bank-count').textContent = bank.length + ' judul tersimpan';
+  if (!bank.length) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-family:var(--font-m);font-size:11px">Upload file .txt — satu judul per baris.</div>`;
+    return;
+  }
+  list.innerHTML = bank.map((t, i) => `
+    <div class="title-item">
+      <span class="title-item-num">${i + 1}</span>
+      <span class="title-item-text">${t}</span>
+      <span class="title-item-del" onclick="deleteTitle(${i})">✕</span>
+    </div>`).join('');
+}
+
+function uploadTitleBank(event) {
+  // Baca channel dari dropdown saat ini (bukan dari closure lama)
+  const ch = document.getElementById('title-ch-sel').value;
+  if (!ch) {
+    toast('Pilih channel dulu sebelum upload Title Bank!', 'warn');
+    event.target.value = '';
+    return;
+  }
+
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    if (!lines.length) {
+      toast('File .txt kosong atau tidak ada judul valid.', 'warn');
+      return;
+    }
+
+    // Update state lokal
+    if (!titleBankData[ch]) titleBankData[ch] = [];
+    titleBankData[ch] = [...new Set([...titleBankData[ch], ...lines])];
+
+    // Kirim ke server — pakai ch yang sudah pasti ada, bukan currentTitleCh
+    const fd = new FormData();
+    fd.append('yt_id', ch);
+    const blob = new Blob([titleBankData[ch].join('\n')], { type: 'text/plain' });
+    fd.append('txt_file', blob, 'titles.txt');
+
+    fetch('/api/upload_title_bank', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          toast(d.message, 'success');
+        } else {
+          toast('Gagal simpan ke server: ' + d.message, 'error');
+        }
+        // Render ulang daftar judul (pakai state lokal yg sudah update)
+        currentTitleCh = ch;
+        renderTitleList(titleBankData[ch]);
+      })
+      .catch(err => {
+        // Tetap render lokal meski server gagal
+        toast('Server tidak merespons, judul tersimpan sementara.', 'warn');
+        currentTitleCh = ch;
+        renderTitleList(titleBankData[ch]);
+      });
+  };
+
+  reader.readAsText(file);
+  event.target.value = '';
+} 
+
+function addManualTitle() {
+  if (!currentTitleCh) { toast('Pilih channel dulu!', 'warn'); return; }
+  const inp = document.getElementById('manual-title-input');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!titleBankData[currentTitleCh]) titleBankData[currentTitleCh] = [];
+  titleBankData[currentTitleCh].push(val);
+  inp.value = '';
+  saveTitleBankToServer();
+  renderTitleList(titleBankData[currentTitleCh]);
+  toast('Judul ditambahkan', 'success');
+}
+
+function deleteTitle(idx) {
+  if (!currentTitleCh || !titleBankData[currentTitleCh]) return;
+  titleBankData[currentTitleCh].splice(idx, 1);
+  saveTitleBankToServer();
+  renderTitleList(titleBankData[currentTitleCh]);
+}
+
+function clearTitleBank() {
+  if (!currentTitleCh) { toast('Pilih channel dulu!', 'warn'); return; }
+  if (!confirm('Hapus semua judul?')) return;
+  titleBankData[currentTitleCh] = [];
+  saveTitleBankToServer();
+  renderTitleList([]);
+}
+
+function saveTitleBankToServer() {
+  if (!currentTitleCh) return;   // jangan kirim kalau channel belum dipilih
+
+  const lines   = titleBankData[currentTitleCh] || [];
+  const content = lines.join('\n');
+  const blob    = new Blob([content], { type: 'text/plain' });
+
+  const fd = new FormData();
+  fd.append('yt_id', currentTitleCh);          // ← field wajib, harus ada
+  fd.append('txt_file', blob, 'titles.txt');   // ← nama file eksplisit
+
+  fetch('/api/upload_title_bank', { method: 'POST', body: fd })
+    .catch(err => console.warn('saveTitleBank error:', err));
+}
+
+// ── Title Generator Logic ──
+function generateTitles() {
+  if (!currentTitleCh) { toast('Pilih channel dulu!', 'warn'); return; }
+  const bank = titleBankData[currentTitleCh] || [];
+  if (bank.length < 2) { toast('Bank judul harus berisi minimal 2 judul', 'warn'); return; }
+  const count = parseInt(document.getElementById('gen-count').value) || 10;
+  const mode = document.getElementById('gen-mode').value;
+  const sep = document.getElementById('gen-sep').value;
+  const suffixes = [...document.querySelectorAll('#suffix-chips .active')].map(el => el.getAttribute('data-val'));
+
+  generatedTitles = [];
+  const d = new Date();
+  const days_id = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months_id = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  const parts = bank.map(t => {
+    const m = t.match(/([|\-:])/);
+    if (m) { const s = m[1]; const sp = t.split(s); return [sp[0].trim(), sp.slice(1).join(s).trim()]; }
+    const words = t.split(' '), mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+  });
+  const firsts = parts.map(p => p[0]).filter(Boolean);
+  const seconds = parts.map(p => p[1]).filter(Boolean);
+
+  const qualifiers = ['Relaxing','Peaceful','Dreamy','Smooth','Deep','Warm','Soft','Calm','Pure','Mellow','Gentle','Soothing'];
+  const vibes = ['Vibes','Mood','Session','Mix','Edition','Collection','Series','Journey','Escape','Moment'];
+
+  let attempts = 0;
+  const maxAttempts = count * 10;
+
+  while (generatedTitles.length < count && attempts < maxAttempts) {
+    attempts++;
+    let title = '';
+    if (mode === 'recombine') {
+      const a = firsts[Math.floor(Math.random() * firsts.length)];
+      const b = seconds[Math.floor(Math.random() * seconds.length)];
+      title = a + sep + b;
+    } else if (mode === 'shuffle') {
+      title = bank[Math.floor(Math.random() * bank.length)];
+    } else {
+      const base = bank[Math.floor(Math.random() * bank.length)];
+      const q = qualifiers[Math.floor(Math.random() * qualifiers.length)];
+      const v = vibes[Math.floor(Math.random() * vibes.length)];
+      const vars = [
+        `${q} ${base}`,
+        `${base} ${v}`,
+        `${q} ${base} ${v}`,
+        `${base} — ${q} ${v}`,
+      ];
+      title = vars[Math.floor(Math.random() * vars.length)];
+    }
+    if (suffixes.length) {
+      let suf = suffixes.join(' ')
+        .replace(/{hari}/gi, days_id[d.getDay()])
+        .replace(/{bulan}/gi, months_id[d.getMonth()])
+        .replace(/{tahun}/gi, d.getFullYear());
+      title += ' | ' + suf;
+    }
+    title = title.replace(/\s+/g, ' ').trim();
+    if (!generatedTitles.includes(title)) generatedTitles.push(title);
+  }
+
+  const rc = document.getElementById('gen-results');
+  rc.innerHTML = generatedTitles.map((t, i) => `
+    <div class="gen-title-item">
+      <span style="font-family:var(--font-m);font-size:9px;color:var(--muted);width:24px;flex-shrink:0">${i + 1}</span>
+      <span class="gen-title-text">${t}</span>
+      <span class="gen-title-use" onclick="addOneGenTitle(${i})">+ Pakai</span>
+    </div>`).join('');
+  document.getElementById('gen-result-count').textContent = generatedTitles.length + ' judul baru';
+  document.getElementById('gen-result-card').style.display = 'block';
+  toast(`${generatedTitles.length} judul berhasil di-generate`, 'success');
+}
+
+function addOneGenTitle(idx) {
+  if (!currentTitleCh) { toast('Pilih channel dulu!', 'warn'); return; }
+  if (!titleBankData[currentTitleCh]) titleBankData[currentTitleCh] = [];
+  if (idx < 0 || idx >= generatedTitles.length) return;
+  titleBankData[currentTitleCh].push(generatedTitles[idx]);
+  saveTitleBankToServer();
+  renderTitleList(titleBankData[currentTitleCh]);
+  toast('Judul ditambahkan ke bank', 'success');
+}
+
+function saveAllGenerated() {
+  if (!currentTitleCh) { toast('Pilih channel dulu!', 'warn'); return; }
+  if (!generatedTitles.length) { toast('Belum ada hasil generate', 'warn'); return; }
+  if (!titleBankData[currentTitleCh]) titleBankData[currentTitleCh] = [];
+  titleBankData[currentTitleCh] = [...new Set([...titleBankData[currentTitleCh], ...generatedTitles])];
+  saveTitleBankToServer();
+  renderTitleList(titleBankData[currentTitleCh]);
+  toast(`${generatedTitles.length} judul disimpan ke bank`, 'success');
+}
+
+// ────────────────────────────────────────────────────────
+//  BATCH CREATOR (AUTO-PILOT)
+// ────────────────────────────────────────────────────────
+function onTargetDurationChange() {
+  const val = document.getElementById('bc-target-duration').value;
+  document.getElementById('bc-custom-duration').style.display = val === 'custom' ? 'block' : 'none';
+  updateBatchPreview();
+}
+
+let currentStep = 1;
+
+function goStep(n) {
+  if (n > 1 && !document.getElementById('bc-channel').value) {
+    toast('Pilih channel dulu!', 'warn'); return;
+  }
+  if (n > 2 && !document.getElementById('bc-start-date').value) {
+    toast('Pilih tanggal publish dulu!', 'warn'); return;
+  }
+  if (n === 3) {
+    setTimeout(initCanvas, 50);
+  }
+  if (n === 4) buildFinalSchedule();
+
+  currentStep = n;
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('bs-' + i).style.display = i === n ? 'block' : 'none';
+    const stepEl = document.getElementById('step-' + i);
+    stepEl.className = 'step' + (i < n ? ' done' : i === n ? ' active' : '');
+  }
+}
+
+function onBcChannelChange() {
+  const yt_id = document.getElementById('bc-channel').value;
+  fetchPlaylistsForBatch(yt_id);
+  if (!yt_id) {
+    ['bc-audio-status', 'bc-bg-status', 'bc-title-status'].forEach(id => {
+      document.getElementById(id).textContent = 'Pilih channel dulu';
+      document.getElementById(id).style.color = 'var(--text2)';
+    });
+    galleryData = { audio: [], background: [], thumbnails: [] };
+    updatePreviewBackground('');
+    return;
+  }
+  fetch(`/api/get_gallery?yt_id=${yt_id}`).then(r => r.json()).then(data => {
+    galleryData = data;
+    const aCount = (data.audio || []).length;
+    const bCount = (data.background || []).length;
+    const tCount = (titleBankData[yt_id] || []).length;
+
+    const setStatus = (id, count, unit) => {
+      const el = document.getElementById(id);
+      el.textContent = count + ' ' + unit + (count > 0 ? ' tersedia ✓' : ' — belum ada!');
+      el.style.color = count > 0 ? 'var(--green)' : 'var(--accent2)';
+    };
+    setStatus('bc-audio-status', aCount, 'file audio');
+    setStatus('bc-bg-status', bCount, 'file background');
+    setStatus('bc-title-status', tCount, 'judul di bank');
+
+    updatePreviewBackground(yt_id);
+  }).catch(() => {
+    ['bc-audio-status', 'bc-bg-status', 'bc-title-status'].forEach(id => {
+      document.getElementById(id).textContent = 'Gagal memuat data';
+      document.getElementById(id).style.color = 'var(--accent2)';
+    });
+  });
+  updateBatchPreview();
+}
+
+function fetchPlaylistsForBatch(yt_id) {
+  const sel = document.getElementById('bc-playlist');
+  if (!yt_id) {
+    sel.innerHTML = '<option value="">-- Tidak masuk playlist --</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">⏳ Mengambil...</option>';
+  fetch('/api/get_playlists?yt_id=' + yt_id)
+    .then(r => r.json())
+    .then(data => {
+      sel.innerHTML = '<option value="">-- Tidak masuk playlist --</option>';
+      if (Array.isArray(data)) {
+        data.forEach(pl => sel.innerHTML += `<option value="${pl.id}">${pl.title}</option>`);
+      }
+    })
+    .catch(() => { sel.innerHTML = '<option value="">-- Tidak masuk playlist --</option>'; });
+}
+
+function onIntervalChange() {
+  const val = document.getElementById('bc-interval').value;
+  document.getElementById('custom-interval-wrap').style.display = val === 'custom' ? 'block' : 'none';
+  updateBatchPreview();
+}
+
+function getIntervalDays() {
+  const sel = document.getElementById('bc-interval').value;
+  if (sel === 'custom') return parseFloat(document.getElementById('bc-custom-interval').value) || 1;
+  return parseFloat(sel);
+}
+
+function updateBatchPreview() {
+  const count = parseInt(document.getElementById('bc-count').value) || 0;
+  const startRaw = document.getElementById('bc-start-date').value;
+  const yt_id = document.getElementById('bc-channel').value;
+  if (!startRaw || count < 1 || !yt_id) return;
+
+  const interval = getIntervalDays();
+  const startDate = new Date(startRaw);
+  if (isNaN(startDate.getTime())) return;
+
+  const bank = titleBankData[yt_id] || [];
+  const items = [];
+  
+  const targetSel = document.getElementById('bc-target-duration').value;
+  const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+
+  for (let i = 0; i < Math.min(count, 8); i++) {
+    const d = new Date(startDate.getTime() + i * interval * 86400000);
+    const title = bank.length ? generateOneTitle(bank) : `Video #${i + 1}`;
+    items.push({ num: i + 1, title, date: d });
+  }
+
+  const fmt = d => d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const endDate = new Date(startDate.getTime() + (count - 1) * interval * 86400000);
+  const summary = `${count} video · Target: ${target_hours} Jam · selesai ${fmt(endDate)}`;
+  document.getElementById('sched-summary').textContent = summary;
+
+  document.getElementById('sched-preview-list').innerHTML =
+    items.map(item => `
+      <div class="sched-item">
+        <div class="sched-num">${item.num}</div>
+        <div class="sched-info">
+          <div class="sched-title">${item.title}</div>
+          <div class="sched-meta">Bahan: MP3 & Background Acak · Target: ${target_hours} Jam</div>
+        </div>
+        <div class="sched-date">${fmt(item.date)}</div>
+      </div>`).join('') +
+    (count > 8 ? `<div style="text-align:center;padding:10px;color:var(--muted);font-family:var(--font-m);font-size:10px">...dan ${count - 8} video lainnya</div>` : '');
+}
+
+function generateOneTitle(bank) {
+  if (!bank || !bank.length) return 'Video';
+  const parts = bank.map(t => {
+    const m = t.match(/([|\-:])/);
+    if (m) { const s = m[1]; const sp = t.split(s); return [sp[0].trim(), sp.slice(1).join(s).trim()]; }
+    const words = t.split(' '), mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+  });
+  const f = parts.map(p => p[0]).filter(Boolean);
+  const s = parts.map(p => p[1]).filter(Boolean);
+  if (!f.length || !s.length) return bank[Math.floor(Math.random() * bank.length)];
+  const a = f[Math.floor(Math.random() * f.length)];
+  const b = s[Math.floor(Math.random() * s.length)];
+  return a + ' — ' + b;
+}
+
+function buildFinalSchedule() {
+  const count = parseInt(document.getElementById('bc-count').value) || 0;
+  const targetSel = document.getElementById('bc-target-duration').value;
+  const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+  
+  const startRaw = document.getElementById('bc-start-date').value;
+  const interval = getIntervalDays();
+  const startDate = new Date(startRaw);
+  if (isNaN(startDate.getTime())) return;
+  const yt_id = document.getElementById('bc-channel').value;
+  const bank = titleBankData[yt_id] || [];
+  const chName = channels.find(c => c.yt_id === yt_id)?.name || '—';
+
+  document.getElementById('sum-count').textContent = count;
+  if(document.getElementById('sum-duration')) document.getElementById('sum-duration').textContent = target_hours + ' Jam';
+  const fmt = d => d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('sum-start').textContent = fmt(startDate);
+  document.getElementById('sum-end').textContent = fmt(new Date(startDate.getTime() + (count - 1) * interval * 86400000));
+
+  const mode = document.getElementById('bc-vis-mode').value;
+  let visInfo = mode === 'manual' ? 'Manual Default' : 'Acak dari Preset';
+  if (mode === 'random') {
+    const checks = document.querySelectorAll('#random-preset-list input[type="checkbox"]:checked');
+    if (checks.length > 0) visInfo = `Acak (${checks.length} Preset)`;
+  }
+
+  const items = Array.from({ length: count }, (_, i) => {
+    const d = new Date(startDate.getTime() + i * interval * 86400000);
+    return { num: i + 1, title: generateOneTitle(bank), date: d };
+  });
+
+  document.getElementById('final-sched-list').innerHTML = items.map(item => `
+    <div class="sched-item">
+      <div class="sched-num">${item.num}</div>
+      <div class="sched-info">
+        <div class="sched-title">${item.title}</div>
+        <div class="sched-meta">Bahan Acak Auto-Loop ➔ Target ${target_hours} Jam · Vis: ${visInfo}</div>
+      </div>
+      <div class="sched-date">${fmt(item.date)}</div>
+    </div>`).join('');
+}
+
+function processBatch() {
+  const count = parseInt(document.getElementById('bc-count').value) || 0;
+  const startRaw = document.getElementById('bc-start-date').value;
+  const yt_id = document.getElementById('bc-channel').value;
+  if (!yt_id || !startRaw || count < 1) { toast('Lengkapi data terlebih dahulu!', 'warn'); return; }
+
+  const mp3_per_video = parseInt(document.getElementById('bc-mp3-count').value) || 5;
+  const targetSel = document.getElementById('bc-target-duration').value;
+  const target_duration_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+
+  const interval = getIntervalDays();
+  const bank = titleBankData[yt_id] || [];
+  const visMode = document.getElementById('bc-vis-mode').value;
+
+  let selectedPresets = [];
+  if (visMode === 'random') {
+    document.querySelectorAll('#random-preset-list input[type="checkbox"]:checked')
+      .forEach(c => selectedPresets.push(c.value));
+    if (selectedPresets.length === 0) {
+      toast('Pilih minimal 1 Preset untuk mode Random!', 'warn'); return;
+    }
+  }
+
+  const generated_titles = Array.from({ length: count }, () => generateOneTitle(bank));
+
+  const payload = {
+    yt_id,
+    playlist_id: document.getElementById('bc-playlist').value,
+    count,
+    mp3_per_video: mp3_per_video,
+    target_duration_hours: target_duration_hours,
+    interval_days: interval,
+    start_date: startRaw,
+    description: document.getElementById('bc-desc').value,
+    tags: document.getElementById('bc-tags').value,
+    privacy: document.getElementById('bc-privacy').value,
+    vis_mode: visMode,
+    vis_preset: visMode === 'random' ? 'random' : getVisConfig(),
+    vis_presets_allowed: selectedPresets,
+    generated_titles
+  };
+
+  fetch('/api/batch_create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(r => r.json()).then(d => {
+    if (d.status === 'success') {
+      toast(`🚀 ${count} video berhasil dimasukkan ke antrean!`, 'success');
+      go('tasks');
+      currentStep = 1;
+      goStep(1);
+    } else {
+      toast('Gagal: ' + (d.message || 'Unknown error'), 'error');
+    }
+  }).catch(() => toast('Koneksi gagal', 'error'));
+}
+
+function refreshBatchDropdowns() {
+  const sel = document.getElementById('bc-channel');
+  const val = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Channel --</option>';
+  channels.forEach(c => sel.innerHTML += `<option value="${c.yt_id}">${c.name}</option>`);
+  if (val) {
+    sel.value = val;
+    onBcChannelChange();
+  }
+}
+
+// ────────────────────────────────────────────────────────
+//  VISUALIZER PRESETS & LIVE PREVIEW
+// ────────────────────────────────────────────────────────
+function uv(id, v, s) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = v + s;
+}
+
+function getVisConfig() {
+  return {
+    color_bot:   document.getElementById('bc-col-bot').value,
+    color_top:   document.getElementById('bc-col-top').value,
+    color_part:  document.getElementById('bc-col-part').value,
+    pos_x:       document.getElementById('bc-pos-x').value,
+    pos_y:       document.getElementById('bc-pos-y').value,
+    width_pct:   document.getElementById('bc-width').value,
+    max_height:  document.getElementById('bc-maxh').value,
+    idle_height: document.getElementById('bc-idle').value,
+    bar_count:   document.getElementById('bc-bars').value,
+    reactivity:  document.getElementById('bc-react').value,
+    gravity:     document.getElementById('bc-grav').value,
+    spacing:     document.getElementById('bc-gap').value,
+    part_amount: document.getElementById('bc-parts').value,
+    part_speed:  document.getElementById('bc-pspd').value,
+  };
+}
+
+function saveVisPreset() {
+  const name = prompt('Nama preset:');
+  if (!name || !name.trim()) return;
+  const trimmed = name.trim();
+  visPresets[trimmed] = getVisConfig();
+  localStorage.setItem('wp_presets', JSON.stringify(visPresets));
+  refreshVisPresetList();
+  fetch('/api/save_preset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ [trimmed]: visPresets[trimmed] })
+  }).catch(() => {});
+  toast('Preset "' + trimmed + '" disimpan', 'success');
+}
+
+function loadVisPreset(name) {
+  if (!name || !visPresets[name]) return;
+  const p = visPresets[name];
+  document.getElementById('bc-col-bot').value = p.color_bot || '#10b981';
+  document.getElementById('bc-col-top').value = p.color_top || '#00e5ff';
+  document.getElementById('bc-col-part').value = p.color_part || '#ffffff';
+  
+  const map = [
+    ['bc-pos-x',  'vv-px', '%'],
+    ['bc-pos-y',  'vv-py', '%'],
+    ['bc-width',  'vv-wp', '%'],
+    ['bc-maxh',   'vv-mh', '%'],
+    ['bc-idle',   'vv-ih', 'px'],
+    ['bc-bars',   'vv-bc', ''],
+    ['bc-react',  'vv-r',  'x'],
+    ['bc-grav',   'vv-g',  ''],
+    ['bc-gap',    'vv-sp', 'px'],
+    ['bc-parts',  'vv-pa', ''],
+    ['bc-pspd',   'vv-ps', 'x']
+  ];
+  const keys = ['pos_x','pos_y','width_pct','max_height','idle_height','bar_count','reactivity','gravity','spacing','part_amount','part_speed'];
+  
+  map.forEach(([elId, lblId, unit], i) => {
+    const el = document.getElementById(elId);
+    if (el && p[keys[i]] !== undefined) {
+      let val = p[keys[i]];
+      
+      // Bonus Fix: Membulatkan angka desimal panjang (seperti 0.669354...) agar UI tetap rapi
+      if (typeof val === 'number' && !Number.isInteger(val)) {
+         val = parseFloat(val.toFixed(2)); 
+      }
+      
+      el.value = val;
+      uv(lblId, val, unit);
+    }
+  });
+
+  // 🔥 BARIS PERUSAK DIHAPUS DARI SINI 🔥
+  // Sebelumnya ada: document.getElementById('vis-preset-load').value = '';
+}
+
+function exportVisPreset() {
+  const p = JSON.parse(localStorage.getItem('wp_presets') || '{}');
+  if (!Object.keys(p).length) { toast('Belum ada preset untuk diexport!', 'warn'); return; }
+  const dl = document.createElement('a');
+  dl.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(p, null, 4)));
+  dl.setAttribute('download', 'presets.json');
+  dl.click();
+  toast('File presets.json berhasil di-download!', 'success');
+}
+
+function importVisPreset() {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.json';
+  inp.onchange = e => {
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (typeof data !== 'object' || Array.isArray(data)) throw new Error('Format tidak valid');
+        
+        visPresets = { ...visPresets, ...data };
+        localStorage.setItem('wp_presets', JSON.stringify(visPresets));
+        refreshVisPresetList();
+        
+        fetch('/api/save_preset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).catch(() => {});
+        
+        toast('Preset berhasil di-import! 📥', 'success');
+
+        // 🔥 FIX IMPORT: Paksa slider & canvas langsung berubah seketika!
+        const keys = Object.keys(data);
+        if (keys.length > 0) {
+          const newPresetName = keys[0];
+          const sel = document.getElementById('vis-preset-load');
+          if(sel) sel.value = newPresetName;
+          loadVisPreset(newPresetName);
+        }
+
+      } catch (err) { toast('File JSON tidak valid!', 'error'); }
+    };
+    r.readAsText(e.target.files[0]);
+  };
+  inp.click();
+}
+
+function deleteVisPreset() {
+  const sel = document.getElementById('vis-preset-load');
+  const name = sel.value;
+  
+  if (!name) {
+    toast('Pilih preset dari dropdown dulu untuk dihapus!', 'warn');
+    return;
+  }
+  
+  if (!confirm(`Yakin ingin menghapus preset "${name}" secara permanen?`)) return;
+
+  // 1. Hapus dari memori lokal (Browser)
+  delete visPresets[name];
+  localStorage.setItem('wp_presets', JSON.stringify(visPresets));
+  
+  // 2. Refresh tampilan UI
+  refreshVisPresetList();
+  
+  // 3. Hapus dari Database Server (VPS)
+  fetch('/api/delete_preset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name })
+  }).then(r => r.json()).then(d => {
+    if (d.status !== 'success') console.warn(d.message);
+  }).catch(() => {});
+
+  toast(`Preset "${name}" berhasil dibuang! 🗑️`, 'success');
+}
+
+function refreshVisPresetList() {
+  const sel = document.getElementById('vis-preset-load');
+  const keys = Object.keys(visPresets);
+  sel.innerHTML = '<option value="">-- Load Preset --</option>' + keys.map(k => `<option value="${k}">${k}</option>`).join('');
+
+  const randList = document.getElementById('random-preset-list');
+  const note = document.getElementById('random-preset-note');
+  if (!keys.length) {
+    randList.innerHTML = '';
+    note.textContent = 'Belum ada preset tersimpan. Simpan dulu di mode Manual.';
+    return;
+  }
+  note.textContent = keys.length + ' preset tersedia. Ceklist yang ingin dimasukkan ke dalam acakan sistem.';
+  randList.innerHTML = keys.map(k => `
+    <label style="display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);padding:6px 12px;border-radius:20px;cursor:pointer;color:var(--text);">
+      <input type="checkbox" value="${k}" checked style="width:14px;height:14px;accent-color:var(--accent);">
+      <span style="font-size:11px;font-weight:700;">${k}</span>
+    </label>`).join('');
+}
+
+function onVisModeChange() {
+  const mode = document.getElementById('bc-vis-mode').value;
+  document.getElementById('vis-manual-wrap').style.display = mode === 'manual' ? 'block' : 'none';
+  document.getElementById('vis-random-wrap').style.display = mode === 'random' ? 'block' : 'none';
+}
+
+function updatePreviewBackground(yt_id) {
+  const bgVid = document.getElementById('preview_bg_vid');
+  const bgImg = document.getElementById('preview_bg_img');
+  if (!bgVid || !bgImg) return;
+
+  if (!yt_id || !galleryData.background || !galleryData.background.length) {
+    bgVid.style.display = 'none';
+    bgImg.style.display = 'none';
+    return;
+  }
+
+  const bgFiles = galleryData.background;
+  const randBg = bgFiles[Math.floor(Math.random() * bgFiles.length)].name;
+  const ext = randBg.split('.').pop().toLowerCase();
+  const url = `/uploads/${yt_id}/backgrounds/${randBg}`;
+
+  if (['mp4', 'webm', 'mov'].includes(ext)) {
+    bgImg.style.display = 'none';
+    bgVid.src = url;
+    bgVid.style.display = 'block';
+    bgVid.play().catch(() => {});
+  } else {
+    bgVid.style.display = 'none';
+    bgImg.src = url;
+    bgImg.style.display = 'block';
+  }
+}
+
+function drawLivePreview() {
+  if (vCtx && visCanvas &&
+      document.getElementById('panel-batch') &&
+      document.getElementById('panel-batch').classList.contains('active') &&
+      document.getElementById('bs-3') &&
+      document.getElementById('bs-3').style.display !== 'none' &&
+      document.getElementById('bc-vis-mode').value === 'manual') {
+
+    const cw = visCanvas.width;
+    const ch = visCanvas.height;
+
+    vCtx.clearRect(0, 0, cw, ch);
+
+    const cBot   = document.getElementById('bc-col-bot').value || '#10b981';
+    const cTop   = document.getElementById('bc-col-top').value || '#00e5ff';
+    const cPart  = document.getElementById('bc-col-part').value || '#ffffff';
+    const px     = parseFloat(document.getElementById('bc-pos-x').value || 50) / 100;
+    const py     = parseFloat(document.getElementById('bc-pos-y').value || 85) / 100;
+    const wPct   = parseFloat(document.getElementById('bc-width').value || 60) / 100;
+    const maxH   = parseFloat(document.getElementById('bc-maxh').value || 40) / 100;
+    const idleH  = parseFloat(document.getElementById('bc-idle').value || 5);
+    const bCount = parseInt(document.getElementById('bc-bars').value || 64);
+    const react  = parseFloat(document.getElementById('bc-react').value || 0.66);
+    const gap    = parseInt(document.getElementById('bc-gap').value || 3);
+
+    const totW  = cw * wPct;
+    const barW  = Math.max(1, (totW - gap * (bCount - 1)) / bCount);
+    const startX = cw * px - totW / 2;
+    const baseY  = ch * py;
+    const limitH = ch * maxH;
+
+    const gradient = vCtx.createLinearGradient(0, baseY - limitH, 0, baseY);
+    gradient.addColorStop(0, cTop);
+    gradient.addColorStop(1, cBot);
+    vCtx.fillStyle = gradient;
+
+    for (let i = 0; i < bCount; i++) {
+      const wave = Math.abs(Math.sin(timeTick / 15 + i * 0.2)) * Math.sin(timeTick / 30 + i) * 0.5 + 0.5;
+      let h = Math.max(idleH, limitH * wave * react);
+      h = Math.min(h, limitH);
+      const x = startX + i * (barW + gap);
+      if (h > 0) vCtx.fillRect(x, baseY - h, barW, h);
+    }
+
+    const pAmt = parseInt(document.getElementById('bc-parts').value || 3);
+    const pSpd = parseFloat(document.getElementById('bc-pspd').value || 1.0);
+    vCtx.fillStyle = cPart;
+    for (let p = 0; p < Math.min(pAmt, 50); p++) {
+      const pX = (Math.sin(timeTick / 40 + p * 10) * cw / 2) + cw / 2;
+      const pY = ch - ((timeTick * pSpd * (1 + p * 0.1)) % ch);
+      vCtx.beginPath();
+      vCtx.arc(pX, pY, 2, 0, Math.PI * 2);
+      vCtx.fill();
+    }
+    timeTick++;
+  }
+  requestAnimationFrame(drawLivePreview);
+}
+
+// ────────────────────────────────────────────────────────
+//  TASK MONITOR
+// ────────────────────────────────────────────────────────
+function fetchServerTasks() {
+  fetch('/api/get_schedule').then(r => r.json()).then(data => {
+    serverData = data;
+    renderTasks();
+  }).catch(() => {});
+}
+
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const hist = document.getElementById('historyTbl');
+  const allActive = [...browserQueue, ...serverData.active];
+
+  document.getElementById('q-badge').textContent = allActive.length + ' aktif';
+  const badge = document.getElementById('task-badge');
+  if (allActive.length) { badge.style.display = 'inline'; badge.textContent = allActive.length; }
+  else badge.style.display = 'none';
+
+  document.getElementById('tm-ch').textContent = channels.length;
+  document.getElementById('tm-act').textContent = allActive.length;
+  document.getElementById('tm-done').textContent = (serverData.history || []).length;
+
+  if (!allActive.length) {
+    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Tidak ada task aktif.</div>`;
+  } else {
+    list.innerHTML = [
+      ...browserQueue.map(t => `
+        <div class="task-row">
+          <div class="task-icon">📤</div>
+          <div class="task-info">
+            <div class="task-name">${t.judul || 'Task'}</div>
+            <div class="task-meta">${t.jadwal || ''}</div>
+          </div>
+          <span class="pill p-yellow" style="flex-shrink:0">${t.status || 'Menunggu'}</span>
+          <button class="cancel-btn" onclick="cancelBrowserTask(${JSON.stringify(t.id)})">Batalkan</button>
+        </div>`),
+      ...serverData.active.map(t => `
+        <div class="task-row">
+          <div class="task-icon">⚙️</div>
+          <div class="task-info">
+            <div class="task-name">${t.title || 'Task'}</div>
+            <div class="task-meta">${t.time || ''}</div>
+          </div>
+          <span class="pill p-cyan" style="flex-shrink:0;max-width:200px;white-space:normal;line-height:1.3">${t.status || '—'}</span>
+          <button class="stop-btn" onclick="stopTask(${Number(t.id)})">Stop</button>
+        </div>`)
+    ].join('');
+  }
+
+  if (!(serverData.history || []).length) {
+    hist.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:16px;color:var(--muted);font-family:var(--font-m);font-size:11px">Belum ada history.</td></tr>`;
+  } else {
+    hist.innerHTML = serverData.history.map(t => {
+      const c = t.status.includes('❌') ? 'var(--accent2)' : 'var(--muted)';
+      return `<tr>
+        <td><span style="font-family:var(--font-m);font-size:10px;color:var(--muted)">#${t.id}</span></td>
+        <td style="font-weight:700">${t.title || '—'}</td>
+        <td style="color:${c};font-weight:600">${t.status}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function stopTask(id) {
+  if (!confirm('Hentikan paksa?')) return;
+  fetch('/api/stop_task/' + id, { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { toast(d.message, 'info'); fetchServerTasks(); })
+    .catch(() => toast('Gagal menghentikan task', 'error'));
+}
+
+function cancelBrowserTask(id) {
+  const idx = browserQueue.findIndex(t => t.id === id);
+  if (idx !== -1) {
+    browserQueue.splice(idx, 1);
+    renderTasks();
+    toast('Task dibatalkan', 'info');
+  }
+}
+
+function clearHistory() {
+  if (!confirm('Bersihkan riwayat?')) return;
+  fetch('/api/clear_history', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => { toast(d.message, 'success'); fetchServerTasks(); })
+    .catch(() => toast('Gagal menghapus riwayat', 'error'));
+}
+
+// ────────────────────────────────────────────────────────
+//  ANALYTICS
+// ────────────────────────────────────────────────────────
+function fetchAnalytics() {
+  fetch('/api/get_youtube_analytics').then(r => r.json()).then(data => {
+    analyticsData = data;
+    const f = document.getElementById('analytics_filter');
+    f.innerHTML = '<option value="ALL">⬡ ALL CHANNELS</option>';
+    data.forEach(d => f.innerHTML += `<option value="${d.yt_id}">${d.name}</option>`);
+    renderAnalytics();
+  }).catch(() => {});
+}
+
+function renderAnalytics() {
+  const fv = document.getElementById('analytics_filter').value;
+  const monBox = document.getElementById('mon-box');
+  let tV = 0, tS = 0, tW = 0, cL = [], cV = [], cS = [];
+  if (fv === 'ALL') {
+    monBox.style.display = 'none';
+    analyticsData.forEach(d => { tV += d.views; tS += d.subs; tW += d.watch_hours; cL.push(d.name); cV.push(d.views); cS.push(d.subs); });
+    drawChart('Perbandingan Views & Subs', cL, cV, cS, 'bar');
+  } else {
+    monBox.style.display = 'block';
+    const d = analyticsData.find(x => x.yt_id === fv);
+    if (d) {
+      tV = d.views; tS = d.subs; tW = d.watch_hours;
+      const pS = Math.min((tS / 1000) * 100, 100);
+      const pW = Math.min((tW / 4000) * 100, 100);
+      document.getElementById('prog-subs').style.width = pS + '%';
+      document.getElementById('prog-watch').style.width = pW + '%';
+      document.getElementById('mon-s-pct').textContent = Math.round(pS) + '%';
+      document.getElementById('mon-w-pct').textContent = Math.round(pW) + '%';
+      const sb = document.getElementById('mon-status');
+      if (tS >= 1000 && tW >= 4000) { sb.textContent = '🎉 MEMENUHI SYARAT'; sb.className = 'pill p-green'; }
+      else { sb.textContent = '❌ BELUM SYARAT'; sb.className = 'pill p-red'; }
+      drawChart('Statistik: ' + d.name, ['Subscribers', 'Videos'], [d.subs, d.videos], [], 'doughnut');
+    }
+  }
+  document.getElementById('st-views').textContent = tV.toLocaleString();
+  document.getElementById('st-watch').textContent = tW.toLocaleString();
+  document.getElementById('st-subs').textContent = tS.toLocaleString();
+}
+
+function drawChart(title, labels, d1, d2, type) {
+  const ctx = document.getElementById('dashChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  Chart.defaults.color = '#3a5470';
+  Chart.defaults.font.family = 'DM Mono';
+  const dts = type === 'bar'
+    ? [{ label: 'Total Views', data: d1, backgroundColor: '#00d4ff', borderRadius: 5 }, { label: 'Subscribers', data: d2, backgroundColor: '#7c5cfc', borderRadius: 5 }]
+    : [{ data: d1, backgroundColor: ['#00d4ff', '#7c5cfc'], borderWidth: 0 }];
+  chartInstance = new Chart(ctx, {
+    type, data: { labels, datasets: dts },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { title: { display: true, text: title, font: { size: 13, weight: 'bold' }, color: '#c8daea' } },
+      scales: type === 'bar' ? { y: { beginAtZero: true, grid: { color: '#162030' } }, x: { grid: { display: false } } } : {}
+    }
+  });
+}
+
+// ────────────────────────────────────────────────────────
+//  SETTINGS
+// ────────────────────────────────────────────────────────
+function checkApiStatus() {
+  fetch('/api/check_secret?t=' + Date.now()).then(r => r.json()).then(d => {
+    const b = document.getElementById('api-badge');
+    if (d.exists) { b.textContent = '🟢 API AKTIF'; b.className = 'pill p-green'; }
+    else { b.textContent = '🔴 BELUM ADA API'; b.className = 'pill p-red'; }
+  }).catch(() => {});
+}
+
+function uploadSecret() {
+  const form = document.getElementById('api-form');
+  const fileInput = form.querySelector('input[type=file]');
+  if (!fileInput.files.length) { toast('Pilih file JSON dulu!', 'warn'); return; }
+  fetch('/api/upload_secret', { method: 'POST', body: new FormData(form) })
+    .then(r => r.json())
+    .then(d => { toast(d.message, 'success'); checkApiStatus(); form.reset(); })
+    .catch(() => toast('Gagal upload API key', 'error'));
+}
+
+function generateTVLink() {
+  fetch('/api/generate_tv_link').then(r => r.json()).then(d => {
+    const box = document.getElementById('tv-box');
+    const msg = document.getElementById('tv-msg');
+    const inp = document.getElementById('tv-url');
+    box.style.display = 'block';
+    if (d.error) {
+      msg.textContent = d.error;
+      msg.style.color = 'var(--accent2)';
+      inp.style.display = 'none';
+    } else {
+      msg.textContent = 'Copy link ini di profil Chrome channel YouTube target:';
+      msg.style.color = 'var(--accent)';
+      inp.style.display = 'block';
+      inp.value = d.auth_url;
+    }
+  }).catch(() => toast('Gagal generate link', 'error'));
+}
+
+function copyTvUrl() {
+  const inp = document.getElementById('tv-url');
+  inp.select();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(inp.value).then(() => toast('Link disalin!', 'success')).catch(() => {
+      document.execCommand('copy');
+      toast('Link disalin!', 'success');
+    });
+  } else {
+    document.execCommand('copy');
+    toast('Link disalin!', 'success');
+  }
+}
+
+// ────────────────────────────────────────────────────────
+//  INIT
+// ────────────────────────────────────────────────────────
+function init() {
+  loadChannels();
+  fetchAnalytics();
+  checkApiStatus();
+  
+  fetch('/api/get_presets')
+    .then(r => r.json())
+    .then(d => {
+      // 🔥 FIX: Paksa browser mengikuti data dari server VPS!
+      if (d && typeof d === 'object' && !Array.isArray(d)) {
+        visPresets = d;
+      } else {
+        visPresets = {}; // Jika di VPS kosong, paksa browser ikut kosong!
+      }
+      localStorage.setItem('wp_presets', JSON.stringify(visPresets));
+      refreshVisPresetList();
+    })
+    .catch(() => refreshVisPresetList());
+
+  const now = new Date();
+  now.setMinutes(0, 0, 0);
+  document.getElementById('bc-start-date').value = now.toISOString().slice(0, 16);
+
+  setInterval(fetchServerTasks, 2000);
+  setInterval(pollSysStats, 3000);
+
+  drawLivePreview();
+}
+
+// FIX PENTING: Memaksa init() langsung berjalan tanpa mempedulikan gambar yang nyangkut
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
