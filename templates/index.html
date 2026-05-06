@@ -454,6 +454,60 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 #preset_canvas {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
 }
+
+/* ════════ MOBILE RESPONSIVE & BOTTOM NAV ════════ */
+@media (max-width: 768px) {
+  /* Sembunyikan sidebar Desktop secara total */
+  .sidebar { display: none !important; }
+  
+  /* Beri ruang kosong di bawah agar konten tidak tertutup menu */
+  .main { width: 100%; padding-bottom: 70px; }
+  .content { padding: 16px 12px; }
+  .topbar { padding: 12px; }
+  .tb-right { display: none; }
+  
+  /* Kolom jadi lurus ke bawah */
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .g2, .g3, .g4, .g21 { grid-template-columns: 1fr !important; gap: 12px; }
+  .sh { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .sh select { width: 100% !important; }
+  .card-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .gallery-tabs { flex-wrap: wrap; }
+  .step-indicator { flex-wrap: wrap; gap: 10px; }
+  .step-line { display: none; }
+  .modal { width: 95%; margin: 10px; }
+  .card-head > div:last-child { width: 100%; display: flex; flex-wrap: wrap; justify-content: flex-start; }
+
+  /* ── DESAIN BOTTOM NAVIGATION BAR ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 60px; background: rgba(9,13,20,.95); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border); display: flex; justify-content: space-around;
+    align-items: center; z-index: 100; padding: 0 5px;
+  }
+  .bnav-item {
+    background: transparent; border: none; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-family: var(--font-d); font-size: 9px; font-weight: 700;
+    padding: 5px; width: 60px; cursor: pointer; transition: .2s;
+    position: relative;
+  }
+  .bnav-item .nav-icon { font-size: 16px; margin-bottom: 2px; }
+  .bnav-item.active { color: var(--accent); }
+  .bnav-item.active::after {
+    content: ''; position: absolute; top: -1px; left: 50%;
+    transform: translateX(-50%); width: 24px; height: 3px;
+    background: var(--accent); border-radius: 0 0 3px 3px;
+  }
+  .bnav-badge {
+    position: absolute; top: 2px; right: 8px; background: rgba(255,77,109,.2);
+    color: var(--accent2); border: 1px solid var(--accent2); font-size: 8px; 
+    padding: 1px 4px; border-radius: 10px; font-family: var(--font-m);
+  }
+}
+@media (min-width: 769px) { 
+  .bottom-nav { display: none; } /* Sembunyikan menu bawah di Laptop */
+}
 </style>
 </head>
 <!-- FIX PENTING: Dihapus onload="init()" agar browser tidak menunggu logo yang error -->
@@ -896,7 +950,28 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 
   </div>
 </main>
-
+<!-- BOTTOM NAVIGATION (HANYA MUNCUL DI HP) -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="go('dashboard')" id="bn-dashboard">
+    <span class="nav-icon">⬡</span><span>Dash</span>
+  </button>
+  <button class="bnav-item" onclick="go('tasks')" id="bn-tasks">
+    <span class="nav-icon">◈</span><span>Tasks</span>
+    <span class="bnav-badge" id="bn-badge" style="display:none">0</span>
+  </button>
+  <button class="bnav-item" onclick="go('gallery')" id="bn-gallery">
+    <span class="nav-icon">▦</span><span>Aset</span>
+  </button>
+  <button class="bnav-item" onclick="go('titles')" id="bn-titles">
+    <span class="nav-icon">✦</span><span>Title</span>
+  </button>
+  <button class="bnav-item" onclick="go('batch')" id="bn-batch">
+    <span class="nav-icon">◉</span><span>Batch</span>
+  </button>
+  <button class="bnav-item" onclick="go('settings')" id="bn-settings">
+    <span class="nav-icon">◎</span><span>Set</span>
+  </button>
+</nav>
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
@@ -962,8 +1037,14 @@ const PAGE_META = {
 function go(id, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active')); // Reset menu HP
+
   document.getElementById('panel-' + id).classList.add('active');
-  (el || document.getElementById('nb-' + id)).classList.add('active');
+  
+  // Nyalakan tombol menu Desktop & HP
+  if (document.getElementById('nb-' + id)) document.getElementById('nb-' + id).classList.add('active');
+  if (document.getElementById('bn-' + id)) document.getElementById('bn-' + id).classList.add('active');
+
   document.getElementById('tb-title').textContent = PAGE_META[id].t;
   document.getElementById('tb-sub').textContent = PAGE_META[id].s;
   if (id === 'dashboard') fetchAnalytics();
@@ -971,6 +1052,11 @@ function go(id, el) {
     refreshBatchDropdowns();
     setTimeout(initCanvas, 50);
   }
+}
+
+function toggleMenu() {
+  document.querySelector('.sidebar').classList.toggle('show');
+  document.getElementById('sidebar-overlay').classList.toggle('show');
 }
 
 // ────────────────────────────────────────────────────────
@@ -1983,6 +2069,11 @@ function renderTasks() {
         <td style="color:${c};font-weight:600">${t.status}</td>
       </tr>`;
     }).join('');
+  }
+  const bnBadge = document.getElementById('bn-badge');
+  if (bnBadge) {
+    if (allActive.length) { bnBadge.style.display = 'block'; bnBadge.textContent = allActive.length; }
+    else bnBadge.style.display = 'none';
   }
 }
 
