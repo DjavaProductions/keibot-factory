@@ -178,7 +178,8 @@ def get_channel_folder(yt_id, sub):
 
 def get_random_background(yt_id):
     path = get_channel_folder(yt_id, "backgrounds")
-    files = [os.path.join(path, f) for f in os.listdir(path) if f.lower().endswith(('.mp4', '.jpg', '.png', '.gif'))]
+    # 🔥 FIX 1: Tambahkan .jpeg, .webp, .mov agar semua kebaca
+    files = [os.path.join(path, f) for f in os.listdir(path) if f.lower().endswith(('.mp4', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mov'))]
     if not files: return None
     return random.choice(files)
 
@@ -231,15 +232,25 @@ class AudioBrain:
 class BackgroundManager:
     def __init__(self, bg_paths, w, h):
         self.bg_paths = bg_paths; self.w = w; self.h = h; self.idx = 0; self.reader = None; self.static_bg = None; self.load_current()
+        
     def load_current(self):
         if self.reader: self.reader.close()
         path = self.bg_paths[self.idx]
-        if path.lower().endswith(('.png', '.jpg', '.jpeg')): self.static_bg = cv2.resize(cv2.imread(path), (self.w, self.h))
-        else: self.reader = imageio.get_reader(path, 'ffmpeg')
+        # 🔥 FIX 2: Tambahkan .jpeg dan .webp, serta penanganan error jika gambar rusak
+        if path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')): 
+            img = cv2.imread(path)
+            if img is not None:
+                self.static_bg = cv2.resize(img, (self.w, self.h))
+            else:
+                self.static_bg = np.zeros((self.h, self.w, 3), dtype=np.uint8) # Layar hitam jika gagal baca
+        else: 
+            self.reader = imageio.get_reader(path, 'ffmpeg')
+            
     def get_frame(self):
         if self.static_bg is not None: return self.static_bg.copy()
         try: return cv2.resize(cv2.cvtColor(self.reader.get_next_data(), cv2.COLOR_RGB2BGR), (self.w, self.h))
         except: self.idx = (self.idx + 1) % len(self.bg_paths); self.load_current(); return self.get_frame()
+        
     def close(self):
         if self.reader: self.reader.close()
 
