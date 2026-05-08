@@ -20,7 +20,6 @@ echo "📥 Mengunduh sistem dari GitHub..."
 git clone https://github.com/keibotofficial/keibot-factory.git
 
 # Masuk ke folder hasil download
-# ⚠️ JIKA NAMA REPOSITORY KAMU BUKAN "keibot-factory", GANTI KATA DI BAWAH INI
 cd keibot-factory
 
 # Buat Virtual Environment & Install Library
@@ -28,13 +27,11 @@ echo "📦 Menginstall Library Python..."
 python3 -m venv venv
 source venv/bin/activate
 
-# Install dari requirements dan tambahkan modul baru untuk v2.4
+# Install semua modul sekaligus dari requirements.txt
 pip install -r requirements.txt
-pip install imageio-ffmpeg psutil
 
 # Buat Systemd Service agar jalan 24 jam nonstop
 echo "⚙️ Menyiapkan Mesin 24/7..."
-# ⚠️ PASTIKAN NAMA FOLDER "keibot-factory" DI BAWAH INI SESUAI DENGAN REPOSITORY KAMU
 cat <<EOF > /etc/systemd/system/keibot.service
 [Unit]
 Description=KeiBot Factory Web Panel
