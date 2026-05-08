@@ -4,7 +4,8 @@ import cv2, librosa, imageio
 import datetime as dt
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
+import secrets
+from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory, session
 import requests
 
 from googleapiclient.discovery import build
@@ -66,6 +67,52 @@ def get_system_stats():
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, 'static'))
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+CONFIG_FILE = os.path.join(BASE_DIR, 'config.json')
+
+def is_configured(): return os.path.exists(CONFIG_FILE)
+def load_bot_config():
+    if is_configured():
+        with open(CONFIG_FILE, 'r') as f: return json.load(f)
+    return {}
+
+bot_config = load_bot_config()
+app.secret_key = bot_config.get('secret_key', secrets.token_hex(24))
+
+@app.before_request
+def check_security():
+    allowed_routes = ['login', 'setup', 'static', 'serve_uploads', 'device_login', 'poll_device_token']
+    if request.endpoint in allowed_routes: return
+    if not is_configured(): return redirect(url_for('setup'))
+    if 'logged_in' not in session: return redirect(url_for('login'))
+
+@app.route('/setup', methods=['GET', 'POST'])
+def setup():
+    if is_configured(): return redirect(url_for('login'))
+    error = None
+    if request.method == 'POST':
+        pin = request.form.get('new_pin'); pin2 = request.form.get('confirm_pin')
+        if not pin or len(pin) < 3: error = "PIN minimal 3 karakter."
+        elif pin != pin2: error = "PIN tidak cocok!"
+        else:
+            new_secret = secrets.token_hex(24)
+            with open(CONFIG_FILE, 'w') as f: json.dump({"admin_pin": pin, "secret_key": new_secret}, f, indent=4)
+            app.secret_key = new_secret; session['logged_in'] = True
+            return redirect(url_for('index'))
+    return render_template('setup.html', error=error)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if not is_configured(): return redirect(url_for('setup'))
+    error = None
+    if request.method == 'POST':
+        if request.form.get('password') == load_bot_config().get('admin_pin'):
+            session['logged_in'] = True; return redirect(url_for('index'))
+        else: error = 'Akses Ditolak! PIN Salah.'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None); return redirect(url_for('login'))
 
 BASE_UPLOAD = os.path.join(BASE_DIR, "uploads")
 DB_FILE = os.path.join(BASE_DIR, 'channels_db.json')
@@ -176,24 +223,31 @@ def get_channel_folder(yt_id, sub):
     os.makedirs(path, exist_ok=True)
     return path
 
-def get_random_background(yt_id):
+# 🔥 FITUR 3: PENGAMBILAN MULTI-BACKGROUND 🔥
+def get_multi_backgrounds(yt_id, count=1):
     path = get_channel_folder(yt_id, "backgrounds")
-    # 🔥 FIX 1: Tambahkan .jpeg, .webp, .mov agar semua kebaca
     files = [os.path.join(path, f) for f in os.listdir(path) if f.lower().endswith(('.mp4', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.mov'))]
-    if not files: return None
-    return random.choice(files)
+    if not files: return []
+    random.shuffle(files)
+    
+    # Jika stok video kurang dari jumlah yang diminta, kita ulangi/perbanyak stoknya agar pas
+    selected = []
+    while len(selected) < count and files:
+        for f in files:
+            selected.append(f)
+            if len(selected) == count: break
+    return selected
 
 def get_all_audios(yt_id):
     path = get_channel_folder(yt_id, "audios")
     files = [os.path.join(path, f) for f in os.listdir(path) if f.lower().endswith(('.mp3', '.wav'))]
-    random.shuffle(files) # Telah teracak secara bawaan
+    random.shuffle(files)
     return files
 
 def get_and_consume_thumbnail(yt_id):
     path = get_channel_folder(yt_id, "thumbnails")
     files = sorted([f for f in os.listdir(path) if f.lower().endswith(('.jpg', '.png', '.jpeg'))])
     if not files: return None
-    # Mengambil random alih-alih sorted indeks 0 agar variatif (sesuai diskusi kita)
     return os.path.join(path, random.choice(files))
 
 def get_random_preset(allowed_names=None):
@@ -211,23 +265,60 @@ def get_random_preset(allowed_names=None):
 # ⚙️ CORE ENGINE (VISUALIZER & FFMPEG)
 # ==========================================
 class AudioBrain:
-    def __init__(self): self.y = None; self.sr = None; self.duration = 0.0
+    def __init__(self):
+        self.y = None; self.sr = None; self.onset_env = None; self.has_audio = False
+        self.duration = 0.0
+
     def load(self, path, max_duration=None):
         try:
-            self.y, self.sr = librosa.load(path, sr=22050, duration=max_duration)
+            self.y, self.sr = librosa.load(path, sr=22050, mono=True, duration=max_duration)
+            self.onset_env = librosa.onset.onset_strength(y=self.y, sr=self.sr)
             self.duration = len(self.y) / self.sr
-        except: pass
-    def get_data(self, t, n_bars=64):
-        if self.y is None: return 0.0, False, np.zeros(n_bars)
+            self.has_audio = True
+        except Exception as e:
+            print(f"Audio Error: {e}")
+
+    def get_data(self, t, n_bars=64): 
+        if not self.has_audio: return 0.0, False, np.zeros(n_bars)
         idx = int(t * self.sr)
         if idx >= len(self.y): return 0.0, False, np.zeros(n_bars)
-        chunk = self.y[idx:idx+1024]; vol = np.sqrt(np.mean(chunk**2)) * 13
+
+        try: chunk = self.y[idx:idx+1024]; vol = np.sqrt(np.mean(chunk**2)) * 10 if len(chunk)>0 else 0
+        except: vol = 0
+        
+        hit = False
         try:
-            spec = np.abs(np.fft.rfft(self.y[idx:idx+2048] * np.hanning(2048)))[4:180]
-            raw = np.array([np.mean(b) for b in np.array_split(spec, n_bars // 2)]) / 15.0
-            smooth = np.convolve(raw, np.ones(3)/3, mode='same')
-            return vol, False, np.concatenate((smooth[::-1], smooth))
-        except: return vol, False, np.zeros(n_bars)
+            if int(idx/512) < len(self.onset_env) and self.onset_env[int(idx/512)] > 2.0: 
+                hit = True
+        except: pass
+
+        final_bars = np.zeros(n_bars)
+        try:
+            n_fft = 2048; fft_data = self.y[idx:idx+n_fft]
+            if len(fft_data) == n_fft:
+                windowed_data = fft_data * np.hanning(n_fft)
+                spec = np.abs(np.fft.rfft(windowed_data))
+                usable = spec[2:200] 
+                ls = len(usable)
+                
+                if ls > 0:
+                    half_n = n_bars // 2
+                    raw_bars = np.zeros(half_n)
+                    for i in range(half_n):
+                        s = int((i / half_n) * ls)
+                        e = int(((i + 1) / half_n) * ls)
+                        if e <= s: e = s + 1
+                        if e > ls: e = ls
+                        raw_bars[i] = np.mean(usable[s:e]) / 15.0 if e > s else 0
+                    
+                    smooth_half = np.convolve(raw_bars, np.ones(3)/3, mode='same')
+                    final_bars = np.concatenate((smooth_half[::-1], smooth_half))
+                    
+                    if len(final_bars) < n_bars: final_bars = np.append(final_bars, 0)
+                    elif len(final_bars) > n_bars: final_bars = final_bars[:n_bars]
+        except: pass
+                
+        return vol, hit, final_bars
 
 class BackgroundManager:
     def __init__(self, bg_paths, w, h):
@@ -236,19 +327,19 @@ class BackgroundManager:
     def load_current(self):
         if self.reader: self.reader.close()
         path = self.bg_paths[self.idx]
-        # 🔥 FIX 2: Tambahkan .jpeg dan .webp, serta penanganan error jika gambar rusak
         if path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')): 
             img = cv2.imread(path)
             if img is not None:
                 self.static_bg = cv2.resize(img, (self.w, self.h))
             else:
-                self.static_bg = np.zeros((self.h, self.w, 3), dtype=np.uint8) # Layar hitam jika gagal baca
+                self.static_bg = np.zeros((self.h, self.w, 3), dtype=np.uint8)
         else: 
             self.reader = imageio.get_reader(path, 'ffmpeg')
             
     def get_frame(self):
         if self.static_bg is not None: return self.static_bg.copy()
         try: return cv2.resize(cv2.cvtColor(self.reader.get_next_data(), cv2.COLOR_RGB2BGR), (self.w, self.h))
+        # Jika video habis, akan otomatis lanjut ke video background berikutnya (Multi-background loop)
         except: self.idx = (self.idx + 1) % len(self.bg_paths); self.load_current(); return self.get_frame()
         
     def close(self):
@@ -256,44 +347,105 @@ class BackgroundManager:
 
 class VisualEngine:
     def __init__(self, c_bot, c_top, c_part):
-        self.col_bot = (c_bot[2], c_bot[1], c_bot[0]); self.col_top = (c_top[2], c_top[1], c_top[0]); self.col_part = (c_part[2], c_part[1], c_part[0]); self.bar_h = None
+        self.col_bot = (c_bot[2], c_bot[1], c_bot[0])
+        self.col_top = (c_top[2], c_top[1], c_top[0])
+        self.col_part = (c_part[2], c_part[1], c_part[0])
+        self.bar_h = None
+        
+        # 🔥 KEMBALI KE GRADIEN HALUS 🔥
         self.grad = np.zeros((1000, 1, 3), dtype=np.uint8)
-        for c in range(3): self.grad[:, 0, c] = np.linspace(self.col_top[c], self.col_bot[c], 1000)
+        for c in range(3): 
+            self.grad[:, 0, c] = np.linspace(self.col_top[c], self.col_bot[c], 1000)
+            
         self.particles = []
-    def process(self, frame, vol, bars, cfg):
-        h, w = frame.shape[:2]; n = len(bars)
-        if self.bar_h is None or len(self.bar_h) != n: self.bar_h = np.zeros(n)
+
+    def process(self, frame, vol, is_hit, bars, cfg):
+        h, w = frame.shape[:2]
+        n = len(bars)
+        if self.bar_h is None or len(self.bar_h) != n: 
+            self.bar_h = np.zeros(n)
+            
         def safe_num(val, default):
             try: return float(val) if val != "" and val is not None else default
             except: return default
-
-        react = safe_num(cfg.get('reactivity', 0.66), 0.66)
-        grav = safe_num(cfg.get('gravity', 0.08), 0.08)
-        idle = int(safe_num(cfg.get('idle_height', 5), 5))
-        space = int(safe_num(cfg.get('spacing', 3), 3))
-        px = safe_num(cfg.get('pos_x', 50), 50)/100
-        py = safe_num(cfg.get('pos_y', 85), 85)/100
-        wp = safe_num(cfg.get('width_pct', 60), 60)/100
-        max_h = h * (safe_num(cfg.get('max_height', 40), 40)/100)
-        p_amt = int(safe_num(cfg.get('part_amount', 3), 3))
-        p_spd = safe_num(cfg.get('part_speed', 1.0), 1.0)
-
+            
+        react = safe_num(cfg.get('reactivity'), 0.66)
+        idle = int(safe_num(cfg.get('idle_height'), 5))
+        space = int(safe_num(cfg.get('spacing'), 3))
+        px = safe_num(cfg.get('pos_x'), 50)/100
+        py = safe_num(cfg.get('pos_y'), 85)/100
+        wp = safe_num(cfg.get('width_pct'), 60)/100
+        max_h = h * (safe_num(cfg.get('max_height'), 40)/100)
+        p_amt = int(safe_num(cfg.get('part_amount'), 3))
+        p_spd = safe_num(cfg.get('part_speed'), 1.0)
+        bar_style = cfg.get('bar_style', 'bottom')
+        smooth = safe_num('smoothing', 0.90) 
+        
         for i in range(n):
-            if bars[i] > self.bar_h[i]: self.bar_h[i] = self.bar_h[i]*0.2 + bars[i]*0.8
-            else: self.bar_h[i] = max(0, self.bar_h[i] - grav)
-        tot_w = w * wp; bar_w = int(max(1, (tot_w - (space * (n-1))) / n)); s_x = int((w * px) - (tot_w / 2)); b_y = int(h * py); mask = np.zeros((h, w), dtype=np.uint8)
+            target = bars[i] * react
+            self.bar_h[i] = (self.bar_h[i] * smooth) + (target * (1 - smooth))
+            self.bar_h[i] = max(0, self.bar_h[i])
+            
+        tot_w = w * wp
+        bar_w = int(max(1, (tot_w - (space * (n-1))) / n))
+        s_x = int((w * px) - (tot_w / 2))
+        b_y = int(h * py)
+        
         for i in range(n):
-            val = self.bar_h[i] * react; height = int(max(idle, min(max_h, val * max_h))); x1 = s_x + (i * (bar_w + space)); x2 = x1 + bar_w; y1 = b_y - height
-            if x2 > x1 and y1 < b_y: cv2.rectangle(mask, (x1, y1), (x2, b_y), 255, -1)
-        if int(max_h) > 0:
-            res = cv2.resize(self.grad, (w, int(max_h))); f_grad = np.zeros((h, w, 3), dtype=np.uint8); y1 = max(0, b_y - int(max_h)); y2 = min(h, b_y); f_grad[y1:y2, :] = res[:y2-y1, :]
-            frame = cv2.add(frame, cv2.bitwise_and(f_grad, f_grad, mask=mask))
+            height = int(max(idle, min(max_h, self.bar_h[i] * max_h)))
+            if height <= 0: continue
+            
+            x1 = s_x + (i * (bar_w + space))
+            x2 = x1 + bar_w
+            
+            if bar_style == 'center':
+                y1 = b_y - (height // 2)
+                y2 = b_y + (height // 2)
+            else:
+                y1 = b_y - height
+                y2 = b_y
+            
+            # Pengaman batas layar agar tidak error
+            x1_safe = max(0, min(w, x1))
+            x2_safe = max(0, min(w, x2))
+            y1_safe = max(0, min(h, y1))
+            y2_safe = max(0, min(h, y2))
+            
+            w_safe = x2_safe - x1_safe
+            h_safe = y2_safe - y1_safe
+            
+            if w_safe > 0 and h_safe > 0:
+                # 🔥 GRADIEN DINAMIS: Dipress/Ditarik menyesuaikan TINGGI BAR SAAT INI 🔥
+                bar_grad = cv2.resize(self.grad, (bar_w, height))
+                
+                # Crop jika bar kepanjangan melewati batas layar
+                y_offset = y1_safe - y1
+                x_offset = x1_safe - x1
+                bar_grad_cropped = bar_grad[y_offset : y_offset + h_safe, x_offset : x_offset + w_safe]
+                
+                frame[y1_safe:y2_safe, x1_safe:x2_safe] = bar_grad_cropped
+                
+        # --- 🔥 PARTIKEL PREMIUM 🔥 ---
         if p_amt > 0:
-            while len(self.particles) < p_amt: self.particles.append([np.random.randint(0,w), np.random.randint(0,h), np.random.uniform(0.5,2.0), np.random.randint(1,4)])
+            if is_hit and vol > 1.5:
+                 for _ in range(p_amt):
+                    self.particles.append([
+                        np.random.randint(0, w), np.random.randint(0, h),
+                        np.random.uniform(-3, 3), np.random.uniform(-3, 3),
+                        np.random.randint(2, 6)
+                    ])
+                    
+            alive = []
+            spd = 1.0 + (vol * 0.1 * p_spd)
             for p in self.particles:
-                p[1] -= p[2] * p_spd * (1.0 + (vol * 0.1))
-                if p[1] < 0: p[1] = h; p[0] = np.random.randint(0, w)
-                cv2.circle(frame, (int(p[0]), int(p[1])), p[3], self.col_part, -1)
+                p[0] += p[2] * spd
+                p[1] += p[3] * spd
+                p[4] -= 0.1
+                if p[4] > 0:
+                    cv2.circle(frame, (int(p[0]), int(p[1])), int(p[4]), self.col_part, -1)
+                    alive.append(p)
+            self.particles = alive
+                
         return frame
 
 def hex_to_rgb(h): return tuple(int(str(h).lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
@@ -312,14 +464,57 @@ def render_video_core(task_id, audio_path, bg_paths, output_path, duration, cfg)
     
     try:
         for f in range(total_f):
-            # 🔥 FIX 1: REM DARURAT! Cek tombol Stop di setiap frame video yang dibuat
             if stop_flags.get(task_id):
                 raise Exception("Dibatalkan")
                 
-            v, _, bars = audio.get_data(f/fps, bar_c)
-            proc.stdin.write(vis.process(bg.get_frame(), v, bars, cfg).tobytes())
+            # Menangkap is_hit dari AudioBrain
+            v, is_hit, bars = audio.get_data(f/fps, bar_c)
+            # Mengirimkan is_hit ke proses gambar
+            frame = vis.process(bg.get_frame(), v, is_hit, bars, cfg)
+
+            # --- 🔥 INJEKSI FLOATING CARD KELAS DEWA (DYNAMIC TITLE) 🔥 ---
+            if cfg.get('use_floating_card', False) and 'track_schedule' in cfg:
+                sec = f / fps
+                
+                # Cari lagu apa yang jadwalnya sedang main di detik ini
+                current_track = None
+                for track in cfg['track_schedule']:
+                    if track['start'] <= sec < track['end']:
+                        current_track = track
+                        break
+                
+                if current_track:
+                    # Hitung waktu berjalan sejak lagu INI dimulai
+                    t = sec - current_track['start'] 
+                    
+                    if t < 10.0:
+                        # Animasi masuk (1 dtk pertama) dan animasi keluar (1 dtk terakhir)
+                        alpha = (t * 0.85) if t < 1.0 else ((10.0 - t) * 0.85 if t > 9.0 else 0.85)
+                        
+                        if alpha > 0.05:
+                            cw, ch = 500, 100
+                            x, y = 40, h - ch - 40
+                            
+                            roi = frame[y:y+ch, x:x+cw]
+                            overlay = roi.copy()
+                            
+                            cv2.rectangle(overlay, (0, 0), (cw, ch), (30, 20, 15), -1)
+                            cv2.rectangle(overlay, (15, 15), (85, 85), (60, 200, 80), -1)
+                            
+                            # 🔥 FITUR 1: UPDATE TEKS NAMA CHANNEL 🔥
+                            card_title = current_track['title']
+                            ch_name = cfg.get('channel_name', 'KeiBot FM')
+                            
+                            cv2.putText(overlay, card_title[:35], (105, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
+                            cv2.putText(overlay, f"Now Playing . {ch_name}", (105, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1, cv2.LINE_AA)
+                            cv2.putText(overlay, "J", (36, 65), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3, cv2.LINE_AA)
+                            
+                            cv2.addWeighted(overlay, alpha, roi, 1 - alpha, 0, roi)
+            # --- END INJEKSI ---
+
+            proc.stdin.write(frame.tobytes())
+            
     except Exception as e:
-        # Jika Stop ditekan, hentikan paksa proses FFmpeg agar tidak ngelag
         proc.stdin.close()
         proc.terminate()
         bg.close()
@@ -343,7 +538,6 @@ def background_worker():
             os.path.join(BASE_DIR, f"static/final_{task_id}.mp4"),
         ]
         try:
-            # 🔥 FIX 2: Perbaikan Error Palsu. Jika distop saat cek RAM, tulis "Dibatalkan"
             if not wait_for_resources(task_id): 
                 raise Exception("Dibatalkan")
                 
@@ -352,7 +546,6 @@ def background_worker():
                     if d['id'] == task_id: d['status'] = "Meracik Aset Gallery... ⚙️"
             save_tasks_db()
 
-            # 1. ACAK MP3 & GABUNGKAN (SHUFFLE BAHAN BAKU)
             audio_paths = get_all_audios(yt_id)
             if not audio_paths: raise Exception("Gallery Audio Kosong!")
             
@@ -360,17 +553,31 @@ def background_worker():
             mp3_count = min(mp3_req, len(audio_paths))
             selected_audios = audio_paths[:mp3_count] 
 
+            track_schedule = []
+            current_sec = 0.0
+
             base_audio = os.path.join(BASE_UPLOAD, f"temp_a_{task_id}.mp3")
             c_txt = os.path.join(BASE_UPLOAD, f"temp_c_{task_id}.txt")
             with open(c_txt, 'w', encoding='utf-8') as f:
                 for ap in selected_audios:
                     safe_path = os.path.abspath(ap).replace('\\', '/')
                     f.write(f"file '{safe_path}'\n")
+                    
+                    probe = subprocess.run([get_ffprobe_path(), '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', ap], capture_output=True, text=True)
+                    try: dur = float(probe.stdout.strip())
+                    except: dur = 0.0
+                    
+                    title = os.path.splitext(os.path.basename(ap))[0]
+                    
+                    track_schedule.append({
+                        'title': title,
+                        'start': current_sec,
+                        'end': current_sec + dur
+                    })
+                    current_sec += dur
 
-            # Gabungkan MP3
             subprocess.run([get_ffmpeg_path(), '-y', '-threads', '2', '-f', 'concat', '-safe', '0', '-i', c_txt, '-c', 'copy', base_audio], check=True)
 
-            # 2. CEK DURASI BASE AUDIO
             probe = subprocess.run([
                 get_ffprobe_path(), '-v', 'error', '-show_entries', 'format=duration', 
                 '-of', 'default=noprint_wrappers=1:nokey=1', base_audio
@@ -379,9 +586,14 @@ def background_worker():
             
             if base_duration_sec <= 0: raise Exception("Durasi audio tidak valid!")
 
-            # 3. ACAK BACKGROUND & SET PRESET VISUALIZER
-            bg_vid = get_random_background(yt_id)
-            if not bg_vid: raise Exception("Gallery Background Kosong!")
+            # 🔥 MENGAMBIL NAMA CHANNEL UNTUK FLOATING CARD 🔥
+            channel_data = next((c for c in database_channel if c['yt_id'] == yt_id), None)
+            ch_name = channel_data['name'] if channel_data else "KeiBot FM"
+
+            # 🔥 PENGAMBILAN MULTI BACKGROUND BERDASARKAN INPUT UI 🔥
+            bg_count = int(task.get('bg_count', 1))
+            bg_paths = get_multi_backgrounds(yt_id, count=bg_count)
+            if not bg_paths: raise Exception("Gallery Background Kosong!")
 
             preset = task.get('vis_preset')
             allowed_presets = task.get('vis_presets_allowed', [])
@@ -389,6 +601,10 @@ def background_worker():
                 preset = get_random_preset(allowed_presets)
             if not isinstance(preset, dict):
                 preset = {"color_bot": "#00d4ff", "color_top": "#7c5cfc", "color_part": "#ffffff", "pos_x": 50, "pos_y": 85, "width_pct": 60, "max_height": 40, "idle_height": 5, "bar_count": 64, "reactivity": 0.66, "gravity": 0.08, "spacing": 3, "part_amount": 3, "part_speed": 1.0}
+
+            preset['use_floating_card'] = task.get('use_floating_card', False)
+            preset['track_schedule'] = track_schedule
+            preset['channel_name'] = ch_name
 
             base_video = os.path.join(BASE_UPLOAD, f"temp_v_{task_id}.mp4")
             final_video = os.path.join(BASE_DIR, f"static/final_{task_id}.mp4")
@@ -399,17 +615,15 @@ def background_worker():
                     if d['id'] == task_id: d['status'] = "Rendering Base FFmpeg... ⚡"
             save_tasks_db()
 
-            # 🔥 FIX 3: Sisipkan "task_id" agar Rem Darurat berfungsi
-            render_video_core(task_id, base_audio, [bg_vid], base_video, base_duration_sec, preset)
+            # PERHATIKAN: Kita melemparkan KUMPULAN Video (bg_paths) ke dalam mesin cetak
+            render_video_core(task_id, base_audio, bg_paths, base_video, base_duration_sec, preset)
             if stop_flags.get(task_id): raise Exception("Dibatalkan")
 
-            # 4. KALKULATOR LOOP OTOMATIS
             target_hours = float(task.get('target_duration_hours', 1))
             target_sec = target_hours * 3600
             
             loop_count = math.ceil(target_sec / base_duration_sec)
 
-            # 5. FOTOKOPI KILAT
             if loop_count > 1:
                 with db_lock:
                     for d in active_tasks:
@@ -433,8 +647,6 @@ def background_worker():
                     get_ffmpeg_path(), '-y', '-i', base_video, '-c', 'copy', '-t', str(target_sec), final_video
                 ], check=True)
 
-            # 6. UPLOAD YOUTUBE & THUMBNAIL ACAK
-            channel_data = next((c for c in database_channel if c['yt_id'] == yt_id), None)
             if channel_data:
                 creds_list = channel_data.get('creds_list', [channel_data.get('creds_json')])
                 upload_berhasil = False
@@ -620,7 +832,7 @@ def delete_preset():
         return jsonify({"status": "error", "message": str(e)})
 
 # ============================================================
-# 🖼️ GALLERY ENDPOINTS — FIXED
+# 🖼️ GALLERY ENDPOINTS
 # ============================================================
 
 @app.route('/api/get_asset_counts')
@@ -708,7 +920,7 @@ def delete_gallery_file():
     return jsonify({"status": "error", "message": f"File tidak ditemukan: {path}"})
 
 # ============================================================
-# 📝 TITLE BANK ENDPOINT — FIXED
+# 📝 TITLE BANK ENDPOINT
 # ============================================================
 
 @app.route('/api/upload_title_bank', methods=['POST'])
@@ -860,28 +1072,40 @@ def batch_create():
     yt_id = data.get('yt_id')
     count = data.get('count', 1)
     titles = data.get('generated_titles', [])
+    
+    durations_array = data.get('target_durations_array', []) 
+    
     try:
         base_date = datetime.strptime(data['start_date'], '%Y-%m-%dT%H:%M')
     except:
         return jsonify({"status": "error", "message": "Format tanggal salah"}), 400
+        
     for i in range(count):
         t_id = int(time.time()) + i
         v_date = base_date + timedelta(days=i * data.get('interval_days', 1))
+        
+        if i < len(durations_array):
+            vid_duration = durations_array[i]
+        else:
+            vid_duration = data.get('target_duration_hours', 1)
+            
         blueprint = {
             "id": t_id, "yt_id": yt_id, "title": titles[i] if i < len(titles) else f"Auto Video #{i+1}",
             "publish_date": v_date.strftime('%Y-%m-%d %H:%M'),
             "mp3_per_video": data.get('mp3_per_video', 5), 
-            "target_duration_hours": data.get('target_duration_hours', 1),
+            "bg_count": data.get('bg_count', 1), # <-- Fitur Multi-Background
+            "target_duration_hours": vid_duration,
             "vis_mode": data.get('vis_mode'), "vis_preset": data.get('vis_preset'),
             "vis_presets_allowed": data.get('vis_presets_allowed', []), "description": data.get('description', ''),
-            "tags": data.get('tags', ''), "privacy": data.get('privacy', 'public'), "playlist_id": data.get('playlist_id', '')
+            "tags": data.get('tags', ''), "privacy": data.get('privacy', 'public'), "playlist_id": data.get('playlist_id', ''),
+            "use_floating_card": data.get('use_floating_card', False) 
         }
         with db_lock:
             active_tasks.append({"id": t_id, "title": blueprint['title'], "time": blueprint['publish_date'], "status": "In Factory Queue ⚙️", "type": "📺 VOD"})
         save_tasks_db()
         render_queue.put(blueprint)
     return jsonify({"status": "success", "message": f"{count} Video diproses!"})
-
+    
 @app.route('/uploads/<path:filename>')
 def serve_uploads(filename):
     return send_from_directory(BASE_UPLOAD, filename)
