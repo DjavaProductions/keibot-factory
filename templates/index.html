@@ -459,7 +459,7 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 @media (max-width: 768px) {
   /* Sembunyikan sidebar Desktop secara total */
   .sidebar { display: none !important; }
-  
+  .gitem-del { display: grid !important; opacity: 1 !important; }
   /* Beri ruang kosong di bawah agar konten tidak tertutup menu */
   .main { width: 100%; padding-bottom: 70px; }
   .content { padding: 16px 12px; }
@@ -510,13 +510,11 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 }
 </style>
 </head>
-<!-- FIX PENTING: Dihapus onload="init()" agar browser tidak menunggu logo yang error -->
 <body>
 
 <aside class="sidebar">
   <div class="logo">
     <div class="logo-mark">
-      <!-- FIX PENTING: Dihapus onerror placeholder yang menyebabkan infinite loading -->
       <div class="logo-sq"><img src="/static/logo.png" alt="K" style="color:var(--accent); font-weight:bold; font-size:18px;"></div>
       <div>
         <div class="logo-name">KEIBOT FACTORY</div>
@@ -542,7 +540,9 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         <div class="ch-mini-name" id="sb-name">Belum ada channel</div>
         <div class="ch-status"><span class="dot"></span><span class="ch-status-txt" id="sb-count">0 channel</span></div>
       </div>
+      <a href="/logout" style="color:var(--accent2); text-decoration:none; font-size:16px; margin-left:5px; cursor:pointer;" title="Kunci Sistem">⏻</a>
     </div>
+  </div>
   </div>
 </aside>
 
@@ -564,7 +564,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 
   <div class="content">
 
-    <!-- DASHBOARD -->
     <div id="panel-dashboard" class="panel active">
       <div class="sh" style="margin-bottom:18px">
         <div><div class="sh-title">Analytics Dashboard</div><div class="sh-sub">Performa seluruh channel YouTube yang terhubung</div></div>
@@ -591,7 +590,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
       <div class="card"><div class="card-body" style="padding:16px"><canvas id="dashChart" style="max-height:280px;width:100%"></canvas></div></div>
     </div>
 
-    <!-- TASKS -->
     <div id="panel-tasks" class="panel">
       <div class="sh" style="margin-bottom:18px">
         <div><div class="sh-title">Task Monitor</div><div class="sh-sub">Real-time render & upload queue</div></div>
@@ -620,7 +618,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
       </div>
     </div>
 
-    <!-- GALLERY -->
     <div id="panel-gallery" class="panel">
       <div class="sh" style="margin-bottom:14px">
         <div><div class="sh-title">Gallery</div><div class="sh-sub">Kelola audio, background & thumbnail per channel</div></div>
@@ -640,12 +637,16 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         <div class="uz-sub" id="gallery-accept-hint">Accepted: .mp3 .wav</div>
       </div>
 
-      <div style="margin-top:14px">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
+        <div style="font-size:12px; font-weight:700;">📂 Daftar File Tersimpan:</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteAllGallery()" id="btn-del-all" style="display:none;">🗑 Kosongkan Folder</button>
+      </div>
+
+      <div>
         <div class="gallery-grid" id="gallery-grid"><div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Pilih channel dulu untuk melihat gallery.</div></div>
       </div>
     </div>
 
-    <!-- TITLES -->
     <div id="panel-titles" class="panel">
       <div class="sh" style="margin-bottom:18px">
         <div><div class="sh-title">Title Generator</div><div class="sh-sub">Upload title bank & generate judul baru secara otomatis</div></div>
@@ -698,7 +699,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
       </div>
     </div>
 
-    <!-- BATCH CREATOR -->
     <div id="panel-batch" class="panel">
       <div class="sh" style="margin-bottom:20px">
         <div><div class="sh-title">Batch Creator</div><div class="sh-sub">Buat banyak video sekaligus dengan satu kali setting</div></div>
@@ -711,7 +711,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         <div class="step" id="step-4"><div class="step-num">4</div><span>Preview & Proses</span></div>
       </div>
 
-      <!-- STEP 1 -->
       <div id="bs-1" class="batch-step">
         <div class="g2">
           <div class="form-section">
@@ -724,6 +723,10 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
                 <label class="fl" style="color:var(--accent);">Jumlah MP3 Acak per Video</label>
                 <input type="number" id="bc-mp3-count" value="5" min="1" max="100" title="Sistem akan mengambil lagu secara acak dari Gallery untuk digabungkan menjadi Base Video.">
               </div>
+            </div>
+            <div class="fg" style="margin-top:14px; margin-bottom:0">
+                <label class="fl" style="color:var(--green);">Jumlah Background Acak</label>
+                <input type="number" id="bc-bg-count" value="1" min="1" max="50" title="Berapa video/gambar background yang mau dicampur?">
             </div>
           </div>
 
@@ -760,7 +763,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         <div style="display:flex;justify-content:flex-end"><button class="btn btn-p" onclick="goStep(2)">Lanjut: Jadwal →</button></div>
       </div>
 
-      <!-- STEP 2 -->
       <div id="bs-2" class="batch-step" style="display:none">
         <div class="g2" style="margin-bottom:14px">
           <div class="form-section">
@@ -786,10 +788,21 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
                 <option value="3">3 Jam</option>
                 <option value="5">5 Jam</option>
                 <option value="10" selected>10 Jam (Lullaby / Sleep Music)</option>
-                <option value="12">12 Jam</option>
-                <option value="custom">⚙️ Custom (Input Jam Sendiri)...</option>
+                <option value="custom">⚙️ Custom Fixed (Jam)...</option>
+                <option value="random">🎲 ACAK (Range Menit)...</option>
               </select>
+              
               <input type="number" id="bc-custom-duration" value="2" min="0.1" step="0.1" style="display:none; margin-top:8px; border-color:var(--accent);" placeholder="Ketik jumlah jam (Misal: 2.5 untuk 2,5 Jam)" oninput="updateBatchPreview()">
+              
+              <div id="bc-random-duration-wrap" style="display:none; margin-top:8px; background:var(--card); padding:10px; border-radius:8px; border:1px dashed var(--border2);">
+                <label class="fl" style="font-size:10px; margin-bottom:6px;">Rentang Acak (Menit)</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <input type="number" id="bc-rand-min" value="60" placeholder="Min" style="border-color:var(--accent);" oninput="updateBatchPreview()">
+                  <span style="color:var(--muted); font-size:12px; font-weight:bold;">s/d</span>
+                  <input type="number" id="bc-rand-max" value="80" placeholder="Max" style="border-color:var(--accent);" oninput="updateBatchPreview()">
+                </div>
+                <div style="font-family:var(--font-m);font-size:9px;color:var(--muted);margin-top:6px;">*Durasi akhir setiap video akan diacak di antara angka ini.</div>
+              </div>
             </div>
           </div>
           <div class="form-section">
@@ -801,7 +814,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         <div style="display:flex;justify-content:space-between"><button class="btn btn-g" onclick="goStep(1)">← Kembali</button><button class="btn btn-p" onclick="goStep(3)">Lanjut: Visualizer →</button></div>
       </div>
 
-      <!-- STEP 3 -->
       <div id="bs-3" class="batch-step" style="display:none">
         <div class="form-section">
           <div class="fs-title" style="display:flex; justify-content:space-between; align-items:center;">
@@ -819,6 +831,12 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
                 <option value="manual">Manual (Terapkan setting ini ke semua video)</option>
                 <option value="random">🎲 Random Acak dari Preset Tersimpan</option>
               </select>
+            </div>
+            <div class="fg" style="margin-bottom:0; justify-content:flex-end;">
+              <label style="display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;color:var(--text);">
+                <input type="checkbox" id="bc-use-floating-card" checked style="width:16px;height:16px;accent-color:var(--accent);">
+                <span style="font-size:11px;font-weight:700;">Tampilkan Nama Lagu (Floating Card)</span>
+              </label>
             </div>
           </div>
 
@@ -845,6 +863,13 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
               <div class="sg"><div class="sg-lbl">Width <span class="vb" id="vv-wp">60%</span></div><input type="range" id="bc-width" name="width_pct" min="10" max="100" value="60" oninput="uv('vv-wp',this.value,'%')"></div>
               <div class="sg"><div class="sg-lbl">Max Height <span class="vb" id="vv-mh">40%</span></div><input type="range" id="bc-maxh" name="max_height" min="10" max="100" value="40" oninput="uv('vv-mh',this.value,'%')"></div>
               <div class="sg"><div class="sg-lbl">Idle Height <span class="vb" id="vv-ih">5px</span></div><input type="range" id="bc-idle" name="idle_height" min="0" max="50" value="5" oninput="uv('vv-ih',this.value,'px')"></div>
+              <div class="sg" style="display:flex; flex-direction:column; gap:8px;">
+                  <div class="sg-lbl">Bar Style</div>
+                  <select id="bc-bar-style" style="width:100%;font-size:11px;padding:4px;border-radius:4px;background:var(--surface);color:var(--text);border:1px solid var(--border);">
+                      <option value="bottom">Naik ke Atas</option>
+                      <option value="center">Atas Bawah (Center)</option>
+                  </select>
+              </div>
               <div class="sg"><div class="sg-lbl">Bar Count <span class="vb" id="vv-bc">64</span></div><input type="range" id="bc-bars" name="bar_count" min="10" max="200" value="64" oninput="uv('vv-bc',this.value,'')"></div>
               <div class="sg"><div class="sg-lbl">Reactivity <span class="vb" id="vv-r">0.66x</span></div><input type="range" id="bc-react" name="reactivity" min="0.1" max="4.0" step="0.01" value="0.66" oninput="uv('vv-r',this.value,'x')"></div>
               <div class="sg"><div class="sg-lbl">Gravity <span class="vb" id="vv-g">0.08</span></div><input type="range" id="bc-grav" name="gravity" min="0.01" max="0.50" step="0.01" value="0.08" oninput="uv('vv-g',this.value,'')"></div>
@@ -876,7 +901,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
         </div>
       </div>
 
-      <!-- STEP 4 -->
       <div id="bs-4" class="batch-step" style="display:none">
         <div class="form-section" style="border-color:rgba(0,232,135,.2);background:rgba(0,232,135,.02)">
           <div class="fs-title" style="color:var(--green)">✅ Ringkasan Batch Job</div>
@@ -912,7 +936,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
       </div>
     </div>
 
-    <!-- SETTINGS -->
     <div id="panel-settings" class="panel">
       <div class="sh" style="margin-bottom:20px">
         <div><div class="sh-title">Settings</div><div class="sh-sub">API Google, channel & konfigurasi sistem</div></div>
@@ -950,7 +973,6 @@ input[type=color] { padding:0; height:36px; width:100%; border:1px solid var(--b
 
   </div>
 </main>
-<!-- BOTTOM NAVIGATION (HANYA MUNCUL DI HP) -->
 <nav class="bottom-nav">
   <button class="bnav-item active" onclick="go('dashboard')" id="bn-dashboard">
     <span class="nav-icon">⬡</span><span>Dash</span>
@@ -1179,14 +1201,22 @@ function loadGallery() {
 function renderGallery() {
   const grid = document.getElementById('gallery-grid');
   const items = galleryData[currentGalleryType] || [];
+  const btnDelAll = document.getElementById('btn-del-all');
+
   if (!currentGalleryCh) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Pilih channel untuk melihat gallery.</div>`;
+    if (btnDelAll) btnDelAll.style.display = 'none';
     return;
   }
   if (!items.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--muted);font-family:var(--font-m);font-size:11px">Belum ada file. Upload menggunakan zona di atas.</div>`;
+    if (btnDelAll) btnDelAll.style.display = 'none';
     return;
   }
+  
+  // Munculkan tombol Hapus Semua jika ada isinya
+  if (btnDelAll) btnDelAll.style.display = 'inline-flex';
+
   const isAudio = currentGalleryType === 'audio';
   grid.innerHTML = items.map((f) => `
     <div class="gitem">
@@ -1202,6 +1232,29 @@ function renderGallery() {
     </div>`).join('');
 }
 
+// FUNGSI BARU UNTUK HAPUS SEMUA SEKALIGUS
+async function deleteAllGallery() {
+  const items = galleryData[currentGalleryType] || [];
+  if (!items.length) return;
+  
+  const typeName = currentGalleryType.toUpperCase();
+  if (!confirm(`⚠️ PERINGATAN!\nYakin ingin menghapus SEMUA file ${typeName} (${items.length} file) di channel ini?\n\nFile tidak dapat dikembalikan!`)) return;
+
+  toast(`Menghapus ${items.length} file... Mohon tunggu.`, 'info');
+  
+  // Mesin akan menghapus otomatis satu per satu tanpa memberatkan server
+  for (let f of items) {
+    const fd = new FormData();
+    fd.append('yt_id', currentGalleryCh);
+    fd.append('type', currentGalleryType);
+    fd.append('name', f.name);
+    try { await fetch('/api/delete_gallery_file', { method: 'POST', body: fd }); } catch (e) {}
+  }
+  
+  toast(`Semua file berhasil dikosongkan!`, 'success');
+  loadGallery();
+}
+
 function handleGalleryUpload(event) {
   if (!currentGalleryCh) {
     toast('Pilih channel dulu sebelum upload!', 'warn');
@@ -1212,28 +1265,80 @@ function handleGalleryUpload(event) {
   if (!files || !files.length) return;
 
   const fd = new FormData();
-  fd.append('yt_id', currentGalleryCh);        // ← pastikan selalu ada
-  fd.append('type', currentGalleryType);       // audio | background | thumbnails
-
+  fd.append('yt_id', currentGalleryCh);
+  fd.append('type', currentGalleryType);
   for (let i = 0; i < files.length; i++) {
     fd.append('files[]', files[i]);
   }
 
-  toast(`Mengupload ${files.length} file ke ${currentGalleryType}...`, 'info');
+  // 🎨 SULAP UI JADI PROGRESS BAR
+  const dropZone = document.getElementById('gallery-drop-zone');
+  const inputHtml = `<input type="file" id="gallery-file-input" multiple onchange="handleGalleryUpload(event)">`;
+  dropZone.style.pointerEvents = 'none'; // Matikan klik sementara agar tidak dobel
+  dropZone.innerHTML = `
+    <div style="padding:10px;">
+        <div class="uz-icon">⏳</div>
+        <div class="uz-text">Mengupload ${files.length} file...</div>
+        <div class="pb-bg" style="margin: 15px auto; width: 80%; background: var(--border); height: 8px; border-radius: 4px;">
+            <div class="pb-fill" id="up-bar" style="width: 0%; background: var(--accent); height: 100%; border-radius: 4px; transition: width 0.2s;"></div>
+        </div>
+        <div class="uz-sub" id="up-pct" style="color: var(--accent); font-weight: bold; font-size: 14px;">0%</div>
+    </div>
+  `;
 
-  fetch('/api/upload_gallery', { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(d => {
-      if (d.status === 'success') {
-        toast(d.message, 'success');
-        loadGallery();   // refresh grid setelah upload
-      } else {
-        toast('Upload gagal: ' + (d.message || 'Unknown error'), 'error');
-      }
-    })
-    .catch(err => toast('Koneksi gagal: ' + err.message, 'error'));
+  // Gunakan XHR agar bisa melacak persentase
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/upload_gallery', true);
 
-  event.target.value = '';   // reset input agar bisa upload file sama lagi
+  xhr.upload.onprogress = function(e) {
+    if (e.lengthComputable) {
+      const percent = Math.round((e.loaded / e.total) * 100);
+      document.getElementById('up-bar').style.width = percent + '%';
+      document.getElementById('up-pct').textContent = percent + '%';
+    }
+  };
+
+  // Fungsi mengembalikan kotak upload ke bentuk semula
+  const resetUI = () => {
+    dropZone.style.pointerEvents = 'auto';
+    let hint = 'Accepted: .mp4 .jpg .png';
+    if (currentGalleryType === 'audio') hint = 'Accepted: .mp3 .wav';
+    if (currentGalleryType === 'thumbnails') hint = 'Accepted: .jpg .png';
+    dropZone.innerHTML = `
+        ${inputHtml}
+        <div class="uz-icon">⬆</div>
+        <div class="uz-text">Upload File ke Gallery</div>
+        <div class="uz-sub" id="gallery-accept-hint">${hint}</div>
+    `;
+  };
+
+  xhr.onload = function() {
+    resetUI();
+    if (xhr.status === 200) {
+      try {
+        const d = JSON.parse(xhr.responseText);
+        if (d.status === 'success') {
+          toast('Upload Selesai! 🎉', 'success');
+          loadGallery(); // Refresh grid
+        } else {
+          toast('Upload gagal: ' + d.message, 'error');
+        }
+      } catch(e) { toast('Error baca respon server', 'error'); }
+    } else if (xhr.status === 413) {
+        // 🔥 ERROR KHUSUS NGINX (File Terlalu Besar) 🔥
+        toast('❌ Gagal: File terlalu besar! (Mentok limit Nginx)', 'error');
+        alert("Upload gagal! Ukuran file melebihi limit Nginx di VPS Anda.\nSilakan jalankan perintah Nginx di bawah untuk memperbesar limitnya.");
+    } else {
+      toast('Upload gagal (Error ' + xhr.status + ')', 'error');
+    }
+  };
+
+  xhr.onerror = function() {
+    resetUI();
+    toast('❌ Koneksi terputus saat upload!', 'error');
+  };
+
+  xhr.send(fd);
 }
 
 function deleteGalleryFile(name) {
@@ -1472,7 +1577,18 @@ function saveAllGenerated() {
 // ────────────────────────────────────────────────────────
 function onTargetDurationChange() {
   const val = document.getElementById('bc-target-duration').value;
-  document.getElementById('bc-custom-duration').style.display = val === 'custom' ? 'block' : 'none';
+  
+  // Memunculkan kotak custom jam
+  if (document.getElementById('bc-custom-duration')) {
+      document.getElementById('bc-custom-duration').style.display = val === 'custom' ? 'block' : 'none';
+  }
+  
+  // Memunculkan kotak rentang acak (INI YANG TERLEWAT)
+  const randWrap = document.getElementById('bc-random-duration-wrap');
+  if (randWrap) {
+      randWrap.style.display = val === 'random' ? 'block' : 'none';
+  }
+  
   updateBatchPreview();
 }
 
@@ -1578,8 +1694,17 @@ function updateBatchPreview() {
   const bank = titleBankData[yt_id] || [];
   const items = [];
   
+  // 🔥 FIX LOGIKA "NaN" DI PREVIEW 🔥
   const targetSel = document.getElementById('bc-target-duration').value;
-  const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+  let target_text = '';
+  if (targetSel === 'random') {
+      const minM = document.getElementById('bc-rand-min').value || 60;
+      const maxM = document.getElementById('bc-rand-max').value || 80;
+      target_text = `Acak (${minM}-${maxM} Menit)`;
+  } else {
+      const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+      target_text = target_hours + ' Jam';
+  }
 
   for (let i = 0; i < Math.min(count, 8); i++) {
     const d = new Date(startDate.getTime() + i * interval * 86400000);
@@ -1589,7 +1714,9 @@ function updateBatchPreview() {
 
   const fmt = d => d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const endDate = new Date(startDate.getTime() + (count - 1) * interval * 86400000);
-  const summary = `${count} video · Target: ${target_hours} Jam · selesai ${fmt(endDate)}`;
+  
+  // Masukkan target_text ke sini
+  const summary = `${count} video · Target: ${target_text} · selesai ${fmt(endDate)}`;
   document.getElementById('sched-summary').textContent = summary;
 
   document.getElementById('sched-preview-list').innerHTML =
@@ -1598,7 +1725,7 @@ function updateBatchPreview() {
         <div class="sched-num">${item.num}</div>
         <div class="sched-info">
           <div class="sched-title">${item.title}</div>
-          <div class="sched-meta">Bahan: MP3 & Background Acak · Target: ${target_hours} Jam</div>
+          <div class="sched-meta">Bahan: MP3 & Background Acak · Target: ${target_text}</div>
         </div>
         <div class="sched-date">${fmt(item.date)}</div>
       </div>`).join('') +
@@ -1623,8 +1750,18 @@ function generateOneTitle(bank) {
 
 function buildFinalSchedule() {
   const count = parseInt(document.getElementById('bc-count').value) || 0;
+  
+  // 🔥 FIX LOGIKA "NaN" DI STEP 4 🔥
   const targetSel = document.getElementById('bc-target-duration').value;
-  const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+  let target_text = '';
+  if (targetSel === 'random') {
+      const minM = document.getElementById('bc-rand-min').value || 60;
+      const maxM = document.getElementById('bc-rand-max').value || 80;
+      target_text = `Acak (${minM}-${maxM} Menit)`;
+  } else {
+      const target_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+      target_text = target_hours + ' Jam';
+  }
   
   const startRaw = document.getElementById('bc-start-date').value;
   const interval = getIntervalDays();
@@ -1635,7 +1772,10 @@ function buildFinalSchedule() {
   const chName = channels.find(c => c.yt_id === yt_id)?.name || '—';
 
   document.getElementById('sum-count').textContent = count;
-  if(document.getElementById('sum-duration')) document.getElementById('sum-duration').textContent = target_hours + ' Jam';
+  
+  // Masukkan target_text ke sini
+  if(document.getElementById('sum-duration')) document.getElementById('sum-duration').textContent = target_text;
+  
   const fmt = d => d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   document.getElementById('sum-start').textContent = fmt(startDate);
   document.getElementById('sum-end').textContent = fmt(new Date(startDate.getTime() + (count - 1) * interval * 86400000));
@@ -1657,7 +1797,7 @@ function buildFinalSchedule() {
       <div class="sched-num">${item.num}</div>
       <div class="sched-info">
         <div class="sched-title">${item.title}</div>
-        <div class="sched-meta">Bahan Acak Auto-Loop ➔ Target ${target_hours} Jam · Vis: ${visInfo}</div>
+        <div class="sched-meta">Bahan Acak Auto-Loop ➔ Target ${target_text} · Vis: ${visInfo}</div>
       </div>
       <div class="sched-date">${fmt(item.date)}</div>
     </div>`).join('');
@@ -1667,11 +1807,28 @@ function processBatch() {
   const count = parseInt(document.getElementById('bc-count').value) || 0;
   const startRaw = document.getElementById('bc-start-date').value;
   const yt_id = document.getElementById('bc-channel').value;
-  if (!yt_id || !startRaw || count < 1) { toast('Lengkapi data terlebih dahulu!', 'warn'); return; }
+  
+  if (!yt_id || !startRaw || count < 1) { 
+    toast('Lengkapi data terlebih dahulu!', 'warn'); 
+    return; 
+  }
 
   const mp3_per_video = parseInt(document.getElementById('bc-mp3-count').value) || 5;
   const targetSel = document.getElementById('bc-target-duration').value;
-  const target_duration_hours = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+
+  // Kalkulator Durasi (Fixed / Acak)
+  let target_durations_hours = [];
+  if (targetSel === 'random') {
+      const minM = parseFloat(document.getElementById('bc-rand-min').value) || 60;
+      const maxM = parseFloat(document.getElementById('bc-rand-max').value) || 80;
+      for(let i=0; i<count; i++) {
+          const randM = Math.floor(Math.random() * (maxM - minM + 1)) + minM;
+          target_durations_hours.push(randM / 60);
+      }
+  } else {
+      const fixedH = targetSel === 'custom' ? (parseFloat(document.getElementById('bc-custom-duration').value) || 1) : parseFloat(targetSel);
+      for(let i=0; i<count; i++) target_durations_hours.push(fixedH);
+  }
 
   const interval = getIntervalDays();
   const bank = titleBankData[yt_id] || [];
@@ -1682,18 +1839,25 @@ function processBatch() {
     document.querySelectorAll('#random-preset-list input[type="checkbox"]:checked')
       .forEach(c => selectedPresets.push(c.value));
     if (selectedPresets.length === 0) {
-      toast('Pilih minimal 1 Preset untuk mode Random!', 'warn'); return;
+      toast('Pilih minimal 1 Preset untuk mode Random!', 'warn'); 
+      return;
     }
   }
 
   const generated_titles = Array.from({ length: count }, () => generateOneTitle(bank));
+  
+  // Cek pengaman untuk checkbox Floating Card (agar tidak error jika elemen belum ada)
+  const floatingCb = document.getElementById('bc-use-floating-card');
+  const is_floating = floatingCb ? floatingCb.checked : false;
 
   const payload = {
-    yt_id,
+    yt_id: yt_id,
     playlist_id: document.getElementById('bc-playlist').value,
-    count,
-    mp3_per_video: mp3_per_video,
-    target_duration_hours: target_duration_hours,
+    count: count,
+    mp3_per_video: parseInt(document.getElementById('bc-mp3-count').value) || 5,
+    bg_count: parseInt(document.getElementById('bc-bg-count').value) || 1,
+    target_duration_hours: target_durations_hours[0], // fallback lama
+    target_durations_array: target_durations_hours, // array baru
     interval_days: interval,
     start_date: startRaw,
     description: document.getElementById('bc-desc').value,
@@ -1702,9 +1866,11 @@ function processBatch() {
     vis_mode: visMode,
     vis_preset: visMode === 'random' ? 'random' : getVisConfig(),
     vis_presets_allowed: selectedPresets,
-    generated_titles
+    generated_titles: generated_titles,
+    use_floating_card: is_floating
   };
 
+  // Kirim data ke server
   fetch('/api/batch_create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1742,20 +1908,24 @@ function uv(id, v, s) {
 
 function getVisConfig() {
   return {
-    color_bot:   document.getElementById('bc-col-bot').value,
-    color_top:   document.getElementById('bc-col-top').value,
-    color_part:  document.getElementById('bc-col-part').value,
-    pos_x:       document.getElementById('bc-pos-x').value,
-    pos_y:       document.getElementById('bc-pos-y').value,
-    width_pct:   document.getElementById('bc-width').value,
-    max_height:  document.getElementById('bc-maxh').value,
-    idle_height: document.getElementById('bc-idle').value,
-    bar_count:   document.getElementById('bc-bars').value,
-    reactivity:  document.getElementById('bc-react').value,
-    gravity:     document.getElementById('bc-grav').value,
-    spacing:     document.getElementById('bc-gap').value,
-    part_amount: document.getElementById('bc-parts').value,
-    part_speed:  document.getElementById('bc-pspd').value,
+    // 🎯 INI DIA YANG DIBENARKAN: Mengambil data tepat dari ID slider bawaan Anda
+    color_bot: document.getElementById('bc-col-bot') ? document.getElementById('bc-col-bot').value : '#10b981',
+    color_top: document.getElementById('bc-col-top') ? document.getElementById('bc-col-top').value : '#00e5ff',
+    color_part: document.getElementById('bc-col-part') ? document.getElementById('bc-col-part').value : '#ffffff',
+    
+    pos_x: document.getElementById('bc-pos-x') ? parseFloat(document.getElementById('bc-pos-x').value) : 50,
+    pos_y: document.getElementById('bc-pos-y') ? parseFloat(document.getElementById('bc-pos-y').value) : 85,
+    width_pct: document.getElementById('bc-width') ? parseFloat(document.getElementById('bc-width').value) : 60,
+    max_height: document.getElementById('bc-maxh') ? parseFloat(document.getElementById('bc-maxh').value) : 40,
+    idle_height: document.getElementById('bc-idle') ? parseFloat(document.getElementById('bc-idle').value) : 5,
+    bar_style: document.getElementById('bc-bar-style') ? document.getElementById('bc-bar-style').value : 'bottom',
+    smoothing: 0.90,
+    bar_count: document.getElementById('bc-bars') ? parseInt(document.getElementById('bc-bars').value) : 64,
+    reactivity: document.getElementById('bc-react') ? parseFloat(document.getElementById('bc-react').value) : 0.66,
+    gravity: document.getElementById('bc-grav') ? parseFloat(document.getElementById('bc-grav').value) : 0.08,
+    spacing: document.getElementById('bc-gap') ? parseInt(document.getElementById('bc-gap').value) : 3,
+    part_amount: document.getElementById('bc-parts') ? parseInt(document.getElementById('bc-parts').value) : 3,
+    part_speed: document.getElementById('bc-pspd') ? parseFloat(document.getElementById('bc-pspd').value) : 1.0
   };
 }
 
@@ -1948,65 +2118,57 @@ function updatePreviewBackground(yt_id) {
   }
 }
 
+let prev_bars = null;
 function drawLivePreview() {
-  if (vCtx && visCanvas &&
-      document.getElementById('panel-batch') &&
-      document.getElementById('panel-batch').classList.contains('active') &&
-      document.getElementById('bs-3') &&
-      document.getElementById('bs-3').style.display !== 'none' &&
-      document.getElementById('bc-vis-mode').value === 'manual') {
+  if (vCtx && visCanvas && document.getElementById('panel-batch').classList.contains('active') && document.getElementById('bs-3').style.display !== 'none') {
+    const cw = visCanvas.width; const ch = visCanvas.height; vCtx.clearRect(0, 0, cw, ch);
+    const cfg = getVisConfig();
+    
+    if (!prev_bars || prev_bars.length !== cfg.bar_count) prev_bars = new Array(cfg.bar_count).fill(0);
+    
+    const totW = cw * (cfg.width_pct/100); 
+    const barW = Math.max(1, (totW - cfg.spacing * (cfg.bar_count - 1)) / cfg.bar_count);
+    const startX = cw * (cfg.pos_x/100) - totW / 2; 
+    const baseY = ch * (cfg.pos_y/100); 
+    const limitH = ch * (cfg.max_height/100);
 
-    const cw = visCanvas.width;
-    const ch = visCanvas.height;
-
-    vCtx.clearRect(0, 0, cw, ch);
-
-    const cBot   = document.getElementById('bc-col-bot').value || '#10b981';
-    const cTop   = document.getElementById('bc-col-top').value || '#00e5ff';
-    const cPart  = document.getElementById('bc-col-part').value || '#ffffff';
-    const px     = parseFloat(document.getElementById('bc-pos-x').value || 50) / 100;
-    const py     = parseFloat(document.getElementById('bc-pos-y').value || 85) / 100;
-    const wPct   = parseFloat(document.getElementById('bc-width').value || 60) / 100;
-    const maxH   = parseFloat(document.getElementById('bc-maxh').value || 40) / 100;
-    const idleH  = parseFloat(document.getElementById('bc-idle').value || 5);
-    const bCount = parseInt(document.getElementById('bc-bars').value || 64);
-    const react  = parseFloat(document.getElementById('bc-react').value || 0.66);
-    const gap    = parseInt(document.getElementById('bc-gap').value || 3);
-
-    const totW  = cw * wPct;
-    const barW  = Math.max(1, (totW - gap * (bCount - 1)) / bCount);
-    const startX = cw * px - totW / 2;
-    const baseY  = ch * py;
-    const limitH = ch * maxH;
-
-    const gradient = vCtx.createLinearGradient(0, baseY - limitH, 0, baseY);
-    gradient.addColorStop(0, cTop);
-    gradient.addColorStop(1, cBot);
-    vCtx.fillStyle = gradient;
-
-    for (let i = 0; i < bCount; i++) {
-      const wave = Math.abs(Math.sin(timeTick / 15 + i * 0.2)) * Math.sin(timeTick / 30 + i) * 0.5 + 0.5;
-      let h = Math.max(idleH, limitH * wave * react);
-      h = Math.min(h, limitH);
-      const x = startX + i * (barW + gap);
-      if (h > 0) vCtx.fillRect(x, baseY - h, barW, h);
+    for (let i = 0; i < cfg.bar_count; i++) {
+      const target = limitH * (Math.abs(Math.sin(timeTick / 15 + i * 0.2)) * Math.sin(timeTick / 30 + i) * 0.5 + 0.5) * cfg.reactivity;
+      prev_bars[i] = (prev_bars[i] * 0.85) + (target * 0.15); 
+      const h_val = Math.min(Math.max(cfg.idle_height, prev_bars[i]), limitH);
+      
+      if (h_val > 0) {
+          const x = startX + i * (barW + cfg.spacing);
+          let y1, y2;
+          
+          if (cfg.bar_style === 'center') {
+              y1 = baseY - (h_val / 2);
+              y2 = baseY + (h_val / 2);
+          } else {
+              y1 = baseY - h_val;
+              y2 = baseY;
+          }
+          
+          // 🔥 GRADIEN DINAMIS: Dibuat khusus membentang dari y1 ke y2 per masing-masing bar! 🔥
+          const barGrad = vCtx.createLinearGradient(0, y1, 0, y2);
+          barGrad.addColorStop(0, cfg.color_top);
+          barGrad.addColorStop(1, cfg.color_bot);
+          vCtx.fillStyle = barGrad;
+          
+          vCtx.fillRect(x, y1, barW, h_val);
+      }
     }
-
-    const pAmt = parseInt(document.getElementById('bc-parts').value || 3);
-    const pSpd = parseFloat(document.getElementById('bc-pspd').value || 1.0);
-    vCtx.fillStyle = cPart;
-    for (let p = 0; p < Math.min(pAmt, 50); p++) {
-      const pX = (Math.sin(timeTick / 40 + p * 10) * cw / 2) + cw / 2;
-      const pY = ch - ((timeTick * pSpd * (1 + p * 0.1)) % ch);
-      vCtx.beginPath();
-      vCtx.arc(pX, pY, 2, 0, Math.PI * 2);
+    
+    vCtx.fillStyle = cfg.color_part;
+    for (let p = 0; p < Math.min(cfg.part_amount, 50); p++) {
+      vCtx.beginPath(); 
+      vCtx.arc((Math.sin(timeTick / 40 + p * 10) * cw / 2) + cw / 2, ch - ((timeTick * cfg.part_speed * (1 + p * 0.1)) % ch), 2, 0, Math.PI * 2); 
       vCtx.fill();
     }
     timeTick++;
   }
   requestAnimationFrame(drawLivePreview);
 }
-
 // ────────────────────────────────────────────────────────
 //  TASK MONITOR
 // ────────────────────────────────────────────────────────
