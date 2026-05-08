@@ -3,6 +3,11 @@ echo "========================================"
 echo "🚀 INSTALASI KEIBOT AUTOMATION STUDIO 🚀"
 echo "========================================"
 
+# 1. INSTALL FFMPEG DI SISTEM LINUX (WAJIB UNTUK VISUALIZER)
+echo "⚙️ Menginstal FFMPEG dan Dependensi Sistem..."
+sudo apt-get update -y
+sudo apt-get install -y ffmpeg python3-pip python3-venv
+
 # Pindah ke direktori root VPS
 cd /root
 
@@ -22,7 +27,10 @@ cd keibot-factory
 echo "📦 Menginstall Library Python..."
 python3 -m venv venv
 source venv/bin/activate
+
+# Install dari requirements dan tambahkan modul baru untuk v2.4
 pip install -r requirements.txt
+pip install imageio-ffmpeg psutil
 
 # Buat Systemd Service agar jalan 24 jam nonstop
 echo "⚙️ Menyiapkan Mesin 24/7..."
@@ -52,7 +60,8 @@ IP_ADDRESS=$(curl -s ifconfig.me)
 
 echo "========================================"
 echo "🎉 INSTALASI SELESAI! 🎉"
-echo "Mesin Pabrik Anda sudah menyala."
+echo "Mesin Pabrik Anda sudah menyala 24/7."
 echo "Silakan buka browser di laptop/HP dan akses:"
 echo "👉 http://$IP_ADDRESS:5000"
+echo "⚠️ Anda akan diminta membuat PIN Keamanan saat pertama kali buka."
 echo "========================================"
