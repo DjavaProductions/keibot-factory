@@ -1117,4 +1117,4 @@ if __name__ == '__main__':
             history_tasks.insert(0, t)
     active_tasks = [t for t in active_tasks if "Dibatalkan" not in t['status']]
     save_tasks_db()
-    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', port=8787, debug=False, use_reloader=False)
